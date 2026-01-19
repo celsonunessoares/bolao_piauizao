@@ -17,6 +17,7 @@
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             --radius: 12px;
             --accent: #e74c3c;
+            --purple: #9b59b6;
         }
 
         * {
@@ -138,7 +139,6 @@
             border-radius: 50%;
             cursor: pointer;
             display: none;
-            /* Só aparece no modo admin */
             font-weight: bold;
         }
 
@@ -303,6 +303,11 @@
             margin-bottom: 5px;
         }
 
+        .btn-password {
+            background: var(--purple);
+            margin-bottom: 5px;
+        }
+
         .btn-close-admin {
             background: #666;
         }
@@ -364,8 +369,11 @@
                     <textarea id="new-palpites" rows="5" placeholder="1x2 Nome do Participante"></textarea>
                     <p class="help-text">Formato esperado: 1x2 João Silva</p>
                 </div>
+
                 <button class="btn-add" onclick="window.addNewGame()">Salvar Jogo e Palpites</button>
                 <button class="btn-add btn-reset" onclick="window.resetData()">Resetar para o Padrão</button>
+                <button class="btn-add btn-password" onclick="window.changeAdminPassword()">🔐 Alterar Senha do
+                    Administrador</button>
                 <button class="btn-add btn-close-admin" onclick="window.toggleAdmin()">Fechar Painel</button>
             </section>
 
@@ -386,16 +394,20 @@
                     </thead>
                     <tbody id="ranking-body"></tbody>
                 </table>
-                <p style="font-size: 0.7rem; color: #888; margin-top: 15px;">
-                    * 3 pts: Placar exato da vitória<br>
-                    * 1 pt: Acertar Empate
-                </p>
+                <div style="font-size: 0.7rem; color: #888; margin-top: 15px;">
+                    <p><strong>Regras de Pontuação:</strong></p>
+                    <p>* 3 pts: Acertar o vencedor (independente do placar)</p>
+                    <p>* 1 pt: Acertar o empate (independente do placar)</p>
+                    <p>* 0 pts: Errar o resultado do jogo</p>
+                </div>
             </div>
         </aside>
     </div>
 
     <script>
         // --- CONFIGURAÇÃO E ESTADO ---
+        const ADMIN_PASSWORD_KEY = 'piauizao_admin_password';
+
         const INITIAL_DATA = [{
                 id: 1,
                 rodada: 2,
@@ -406,66 +418,81 @@
                 resultA: null,
                 resultB: null,
                 palpites: [{
-                    user: "Allef Carvalho",
-                    pA: 1,
-                    pB: 2
-                }, {
-                    user: "Yan Gabriel",
-                    pA: 1,
-                    pB: 2
-                }, {
-                    user: "Marília Gabriela",
-                    pA: 0,
-                    pB: 2
-                }, {
-                    user: "João Emanuel",
-                    pA: 0,
-                    pB: 2
-                }, {
-                    user: "Flávio",
-                    pA: 0,
-                    pB: 2
-                }, {
-                    user: "Alex Randec",
-                    pA: 0,
-                    pB: 4
-                }, {
-                    user: "Alberto",
-                    pA: 1,
-                    pB: 3
-                }, {
-                    user: "Diniz Monitoramento",
-                    pA: 0,
-                    pB: 1
-                }, {
-                    user: "Jorge",
-                    pA: 0,
-                    pB: 1
-                }, {
-                    user: "Hudson",
-                    pA: 2,
-                    pB: 1
-                }, {
-                    user: "JP",
-                    pA: 0,
-                    pB: 2
-                }, {
-                    user: "Airton Costa",
-                    pA: 0,
-                    pB: 2
-                }, {
-                    user: "Marcos Vinicius",
-                    pA: 1,
-                    pB: 3
-                }, {
-                    user: "Leandro",
-                    pA: 1,
-                    pB: 2
-                }, {
-                    user: "Erinan",
-                    pA: 0,
-                    pB: 0
-                }]
+                        user: "Allef Carvalho",
+                        pA: 1,
+                        pB: 2
+                    },
+                    {
+                        user: "Yan Gabriel",
+                        pA: 1,
+                        pB: 2
+                    },
+                    {
+                        user: "Marília Gabriela",
+                        pA: 0,
+                        pB: 2
+                    },
+                    {
+                        user: "João Emanuel",
+                        pA: 0,
+                        pB: 2
+                    },
+                    {
+                        user: "Flávio",
+                        pA: 0,
+                        pB: 2
+                    },
+                    {
+                        user: "Alex Randec",
+                        pA: 0,
+                        pB: 4
+                    },
+                    {
+                        user: "Alberto",
+                        pA: 1,
+                        pB: 3
+                    },
+                    {
+                        user: "Diniz Monitoramento",
+                        pA: 0,
+                        pB: 1
+                    },
+                    {
+                        user: "Jorge",
+                        pA: 0,
+                        pB: 1
+                    },
+                    {
+                        user: "Hudson",
+                        pA: 2,
+                        pB: 1
+                    },
+                    {
+                        user: "JP",
+                        pA: 0,
+                        pB: 2
+                    },
+                    {
+                        user: "Airton Costa",
+                        pA: 0,
+                        pB: 2
+                    },
+                    {
+                        user: "Marcos Vinicius",
+                        pA: 1,
+                        pB: 3
+                    },
+                    {
+                        user: "Leandro",
+                        pA: 1,
+                        pB: 2
+                    },
+                    {
+                        user: "Erinan",
+                        pA: 0,
+                        pB: 0
+                    }
+                ]
             },
             {
                 id: 2,
@@ -477,30 +504,36 @@
                 resultA: null,
                 resultB: null,
                 palpites: [{
-                    user: "Allef Carvalho",
-                    pA: 2,
-                    pB: 1
-                }, {
-                    user: "Yan Gabriel",
-                    pA: 2,
-                    pB: 0
-                }, {
-                    user: "Marília Gabriela",
-                    pA: 1,
-                    pB: 0
-                }, {
-                    user: "João Emanuel",
-                    pA: 2,
-                    pB: 1
-                }, {
-                    user: "Hudson",
-                    pA: 1,
-                    pB: 1
-                }, {
-                    user: "JP",
-                    pA: 3,
-                    pB: 0
-                }]
+                        user: "Allef Carvalho",
+                        pA: 2,
+                        pB: 1
+                    },
+                    {
+                        user: "Yan Gabriel",
+                        pA: 2,
+                        pB: 0
+                    },
+                    {
+                        user: "Marília Gabriela",
+                        pA: 1,
+                        pB: 0
+                    },
+                    {
+                        user: "João Emanuel",
+                        pA: 2,
+                        pB: 1
+                    },
+                    {
+                        user: "Hudson",
+                        pA: 1,
+                        pB: 1
+                    },
+                    {
+                        user: "JP",
+                        pA: 3,
+                        pB: 0
+                    }
+                ]
             },
             {
                 id: 3,
@@ -512,22 +545,26 @@
                 resultA: null,
                 resultB: null,
                 palpites: [{
-                    user: "Allef Carvalho",
-                    pA: 0,
-                    pB: 2
-                }, {
-                    user: "Alex Randec",
-                    pA: 1,
-                    pB: 3
-                }, {
-                    user: "Flávio",
-                    pA: 0,
-                    pB: 2
-                }, {
-                    user: "Jorge",
-                    pA: 0,
-                    pB: 1
-                }]
+                        user: "Allef Carvalho",
+                        pA: 0,
+                        pB: 2
+                    },
+                    {
+                        user: "Alex Randec",
+                        pA: 1,
+                        pB: 3
+                    },
+                    {
+                        user: "Flávio",
+                        pA: 0,
+                        pB: 2
+                    },
+                    {
+                        user: "Jorge",
+                        pA: 0,
+                        pB: 1
+                    }
+                ]
             },
             {
                 id: 4,
@@ -539,24 +576,36 @@
                 resultA: null,
                 resultB: null,
                 palpites: [{
-                    user: "Allef Carvalho",
-                    pA: 1,
-                    pB: 1
-                }, {
-                    user: "Yan Gabriel",
-                    pA: 0,
-                    pB: 2
-                }, {
-                    user: "Marcos Vinicius",
-                    pA: 1,
-                    pB: 2
-                }]
+                        user: "Allef Carvalho",
+                        pA: 1,
+                        pB: 1
+                    },
+                    {
+                        user: "Yan Gabriel",
+                        pA: 0,
+                        pB: 2
+                    },
+                    {
+                        user: "Marcos Vinicius",
+                        pA: 1,
+                        pB: 2
+                    }
+                ]
             }
         ];
 
         let matches = [];
         let rodadaAtiva = 2;
         let adminMode = false;
+
+        // --- AUXILIARES DE SENHA ---
+        function getAdminPassword() {
+            return localStorage.getItem(ADMIN_PASSWORD_KEY);
+        }
+
+        function setAdminPassword(newPass) {
+            localStorage.setItem(ADMIN_PASSWORD_KEY, newPass);
+        }
 
         function init() {
             try {
@@ -573,6 +622,11 @@
             renderAll();
         }
 
+        /**
+         * NOVA REGRA DE PONTUAÇÃO:
+         * 3 pontos se acertar o vencedor (A ou B)
+         * 1 ponto se acertar o empate
+         */
         function calculatePoints(guess, official) {
             if (official.pA === null || official.pB === null) return 0;
             const gA = parseInt(guess.pA);
@@ -580,8 +634,21 @@
             const oA = parseInt(official.pA);
             const oB = parseInt(official.pB);
 
-            if (oA !== oB && gA === oA && gB === oB) return 3;
-            if (oA === oB && gA === gB) return 1;
+            // Determinar Resultado Oficial
+            const vitoriaA = oA > oB;
+            const vitoriaB = oB > oA;
+            const empate = oA === oB;
+
+            // Determinar Palpite do Usuário
+            const palpiteA = gA > gB;
+            const palpiteB = gB > gA;
+            const palpiteEmpate = gA === gB;
+
+            // Regra: Acertar o time que ganhou (3 pts) ou empate (1 pt)
+            if (vitoriaA && palpiteA) return 3;
+            if (vitoriaB && palpiteB) return 3;
+            if (empate && palpiteEmpate) return 1;
+
             return 0;
         }
 
@@ -594,21 +661,57 @@
         }
 
         // --- FUNÇÕES GLOBAIS ---
+
         window.toggleAdmin = function () {
             const panel = document.getElementById('admin-panel');
+            const savedPassword = getAdminPassword();
+
+            if (!savedPassword) {
+                const newPass = prompt("Crie uma senha de administrador:");
+                if (!newPass || newPass.length < 4) {
+                    alert("A senha deve ter pelo menos 4 caracteres.");
+                    return;
+                }
+                setAdminPassword(newPass);
+                alert("Senha criada com sucesso!");
+                adminMode = true;
+                panel.style.display = 'block';
+                renderAll();
+                return;
+            }
+
             if (adminMode) {
                 adminMode = false;
                 panel.style.display = 'none';
             } else {
-                const pass = prompt("Senha (padrão: 123):");
-                if (pass === "123") {
+                const pass = prompt("Digite a senha de administrador:");
+                if (pass === savedPassword) {
                     adminMode = true;
                     panel.style.display = 'block';
                 } else {
-                    alert("Senha incorreta");
+                    if (pass !== null) alert("Senha incorreta!");
                 }
             }
             renderAll();
+        };
+
+        window.changeAdminPassword = function () {
+            const current = prompt("Digite a senha atual:");
+            const saved = getAdminPassword();
+
+            if (current !== saved) {
+                alert("Senha atual incorreta!");
+                return;
+            }
+
+            const newPass = prompt("Digite a nova senha:");
+            if (!newPass || newPass.length < 4) {
+                alert("A nova senha deve ter pelo menos 4 caracteres.");
+                return;
+            }
+
+            setAdminPassword(newPass);
+            alert("Senha alterada com sucesso!");
         };
 
         window.setRodada = function (r) {
@@ -635,7 +738,7 @@
         };
 
         window.resetData = function () {
-            if (confirm("Resetar todos os dados?")) {
+            if (confirm("Resetar todos os dados? Isso apagará as partidas salvas.")) {
                 localStorage.removeItem('piauizao_matches_v4');
                 matches = [...INITIAL_DATA];
                 rodadaAtiva = 2;
@@ -668,9 +771,11 @@
             matches.push(newGame);
             save();
             rodadaAtiva = rodada;
+
             document.getElementById('new-teamA').value = '';
             document.getElementById('new-teamB').value = '';
             document.getElementById('new-palpites').value = '';
+
             renderAll();
             alert("Jogo adicionado!");
         };
@@ -698,6 +803,12 @@
         function renderNav() {
             const nav = document.getElementById('rodadas-nav');
             const rodadas = [...new Set(matches.map(m => m.rodada))].sort((a, b) => a - b);
+
+            if (rodadas.length === 0 && matches.length > 0) {
+                nav.innerHTML = '';
+                return;
+            }
+
             nav.innerHTML = rodadas.map(r => `
                 <button class="${r === rodadaAtiva ? 'active' : ''}" onclick="window.setRodada(${r})">
                     Rodada ${r.toString().padStart(2, '0')}
@@ -715,7 +826,6 @@
             }
 
             container.innerHTML = filtered.map(game => {
-                // Pre-calcula os palpites para evitar erros de sintaxe no template string
                 const palpitesHtml = game.palpites.map(p => {
                     const pts = calculatePoints(p, {
                         pA: game.resultA,
@@ -779,6 +889,11 @@
                     pts
                 }))
                 .sort((a, b) => b.pts - a.pts);
+
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Nenhum dado</td></tr>';
+                return;
+            }
 
             tbody.innerHTML = sorted.map((p, i) => `
                 <tr>
