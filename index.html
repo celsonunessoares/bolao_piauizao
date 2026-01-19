@@ -18,6 +18,7 @@
             --radius: 12px;
             --accent: #e74c3c;
             --purple: #9b59b6;
+            --blue: #3498db;
         }
 
         * {
@@ -298,6 +299,16 @@
             margin-bottom: 5px;
         }
 
+        .btn-export {
+            background: var(--blue);
+            margin-bottom: 5px;
+        }
+
+        .btn-import {
+            background: #2ecc71;
+            margin-bottom: 5px;
+        }
+
         .btn-reset {
             background: #e67e22;
             margin-bottom: 5px;
@@ -324,6 +335,25 @@
             background: white;
             border-radius: var(--radius);
             color: #888;
+        }
+
+        .data-export-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 2px dashed #ccc;
+        }
+
+        .data-textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -371,7 +401,16 @@
                 </div>
 
                 <button class="btn-add" onclick="window.addNewGame()">Salvar Jogo e Palpites</button>
-                <button class="btn-add btn-reset" onclick="window.resetData()">Resetar para o Padrão</button>
+
+                <div class="data-export-section">
+                    <h4>📁 Gerenciar Dados</h4>
+                    <p class="help-text">Exporte os dados para salvar em outro dispositivo:</p>
+                    <textarea class="data-textarea" id="export-data" readonly></textarea>
+                    <button class="btn-add btn-export" onclick="window.exportData()">📋 Copiar Dados</button>
+                    <button class="btn-add btn-import" onclick="window.importData()">📥 Importar Dados</button>
+                </div>
+
+                <button class="btn-add btn-reset" onclick="window.resetData()">🔄 Resetar para o Padrão</button>
                 <button class="btn-add btn-password" onclick="window.changeAdminPassword()">🔐 Alterar Senha do
                     Administrador</button>
                 <button class="btn-add btn-close-admin" onclick="window.toggleAdmin()">Fechar Painel</button>
@@ -405,9 +444,7 @@
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO E ESTADO ---
-        const ADMIN_PASSWORD_KEY = 'piauizao_admin_password';
-
+        // --- DADOS INICIAIS ---
         const INITIAL_DATA = [{
                 id: 1,
                 rodada: 2,
@@ -594,39 +631,20 @@
             }
         ];
 
+        // --- VARIÁVEIS GLOBAIS ---
         let matches = [];
         let rodadaAtiva = 2;
         let adminMode = false;
+        const DEFAULT_ADMIN_PASSWORD = "admin123"; // Senha padrão
 
-        // --- AUXILIARES DE SENHA ---
-        function getAdminPassword() {
-            return localStorage.getItem(ADMIN_PASSWORD_KEY);
-        }
-
-        function setAdminPassword(newPass) {
-            localStorage.setItem(ADMIN_PASSWORD_KEY, newPass);
-        }
-
+        // --- INICIALIZAÇÃO ---
         function init() {
-            try {
-                const saved = localStorage.getItem('piauizao_matches_v4');
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    matches = Array.isArray(parsed) ? parsed : INITIAL_DATA;
-                } else {
-                    matches = [...INITIAL_DATA];
-                }
-            } catch (e) {
-                matches = [...INITIAL_DATA];
-            }
+            // Sempre começa com os dados iniciais
+            matches = [...INITIAL_DATA];
             renderAll();
         }
 
-        /**
-         * NOVA REGRA DE PONTUAÇÃO:
-         * 3 pontos se acertar o vencedor (A ou B)
-         * 1 ponto se acertar o empate
-         */
+        // --- CÁLCULO DE PONTOS ---
         function calculatePoints(guess, official) {
             if (official.pA === null || official.pB === null) return 0;
             const gA = parseInt(guess.pA);
@@ -634,17 +652,14 @@
             const oA = parseInt(official.pA);
             const oB = parseInt(official.pB);
 
-            // Determinar Resultado Oficial
             const vitoriaA = oA > oB;
             const vitoriaB = oB > oA;
             const empate = oA === oB;
 
-            // Determinar Palpite do Usuário
             const palpiteA = gA > gB;
             const palpiteB = gB > gA;
             const palpiteEmpate = gA === gB;
 
-            // Regra: Acertar o time que ganhou (3 pts) ou empate (1 pt)
             if (vitoriaA && palpiteA) return 3;
             if (vitoriaB && palpiteB) return 3;
             if (empate && palpiteEmpate) return 1;
@@ -652,42 +667,20 @@
             return 0;
         }
 
-        function save() {
-            try {
-                localStorage.setItem('piauizao_matches_v4', JSON.stringify(matches));
-            } catch (e) {
-                console.error("Erro ao salvar.");
-            }
-        }
-
         // --- FUNÇÕES GLOBAIS ---
-
         window.toggleAdmin = function () {
             const panel = document.getElementById('admin-panel');
-            const savedPassword = getAdminPassword();
-
-            if (!savedPassword) {
-                const newPass = prompt("Crie uma senha de administrador:");
-                if (!newPass || newPass.length < 4) {
-                    alert("A senha deve ter pelo menos 4 caracteres.");
-                    return;
-                }
-                setAdminPassword(newPass);
-                alert("Senha criada com sucesso!");
-                adminMode = true;
-                panel.style.display = 'block';
-                renderAll();
-                return;
-            }
 
             if (adminMode) {
                 adminMode = false;
                 panel.style.display = 'none';
             } else {
-                const pass = prompt("Digite a senha de administrador:");
-                if (pass === savedPassword) {
+                const pass = prompt("Digite a senha de administrador (padrão: admin123):");
+                if (pass === DEFAULT_ADMIN_PASSWORD) {
                     adminMode = true;
                     panel.style.display = 'block';
+                    // Atualizar área de exportação
+                    document.getElementById('export-data').value = JSON.stringify(matches, null, 2);
                 } else {
                     if (pass !== null) alert("Senha incorreta!");
                 }
@@ -696,22 +689,7 @@
         };
 
         window.changeAdminPassword = function () {
-            const current = prompt("Digite a senha atual:");
-            const saved = getAdminPassword();
-
-            if (current !== saved) {
-                alert("Senha atual incorreta!");
-                return;
-            }
-
-            const newPass = prompt("Digite a nova senha:");
-            if (!newPass || newPass.length < 4) {
-                alert("A nova senha deve ter pelo menos 4 caracteres.");
-                return;
-            }
-
-            setAdminPassword(newPass);
-            alert("Senha alterada com sucesso!");
+            alert("Para alterar a senha, edite a variável DEFAULT_ADMIN_PASSWORD no código fonte.");
         };
 
         window.setRodada = function (r) {
@@ -725,24 +703,27 @@
             const num = val === "" ? null : parseInt(val);
             if (side === 'A') game.resultA = num;
             else game.resultB = num;
-            save();
             renderAll();
+            // Atualizar dados de exportação
+            document.getElementById('export-data').value = JSON.stringify(matches, null, 2);
         };
 
         window.deleteGame = function (id) {
             if (confirm("Excluir este jogo permanentemente?")) {
                 matches = matches.filter(m => m.id !== Number(id));
-                save();
                 renderAll();
+                // Atualizar dados de exportação
+                document.getElementById('export-data').value = JSON.stringify(matches, null, 2);
             }
         };
 
         window.resetData = function () {
-            if (confirm("Resetar todos os dados? Isso apagará as partidas salvas.")) {
-                localStorage.removeItem('piauizao_matches_v4');
+            if (confirm("Resetar todos os dados para os valores padrão?")) {
                 matches = [...INITIAL_DATA];
                 rodadaAtiva = 2;
                 renderAll();
+                document.getElementById('export-data').value = JSON.stringify(matches, null, 2);
+                alert("Dados resetados para o padrão!");
             }
         };
 
@@ -769,15 +750,57 @@
             };
 
             matches.push(newGame);
-            save();
             rodadaAtiva = rodada;
 
+            // Limpar formulário
             document.getElementById('new-teamA').value = '';
             document.getElementById('new-teamB').value = '';
             document.getElementById('new-palpites').value = '';
 
             renderAll();
+            document.getElementById('export-data').value = JSON.stringify(matches, null, 2);
             alert("Jogo adicionado!");
+        };
+
+        window.exportData = function () {
+            const exportData = JSON.stringify(matches, null, 2);
+            navigator.clipboard.writeText(exportData).then(() => {
+                alert(
+                    "Dados copiados para a área de transferência! Cole em um arquivo de texto para salvar."
+                    );
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert("Copie manualmente o texto acima para salvar os dados.");
+            });
+        };
+
+        window.importData = function () {
+            const dataStr = prompt("Cole os dados JSON aqui:");
+            if (!dataStr) return;
+
+            try {
+                const importedData = JSON.parse(dataStr);
+                if (!Array.isArray(importedData)) {
+                    throw new Error("Dados inválidos");
+                }
+
+                // Validar estrutura básica
+                const isValid = importedData.every(item =>
+                    item.id && item.teamA && item.teamB && Array.isArray(item.palpites)
+                );
+
+                if (!isValid) {
+                    throw new Error("Estrutura de dados inválida");
+                }
+
+                matches = importedData;
+                renderAll();
+                document.getElementById('export-data').value = JSON.stringify(matches, null, 2);
+                alert("Dados importados com sucesso!");
+            } catch (error) {
+                alert("Erro ao importar dados. Verifique o formato JSON.");
+                console.error(error);
+            }
         };
 
         function parsePalpites(text) {
