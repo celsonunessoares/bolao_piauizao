@@ -91,6 +91,16 @@
         // Inicializar Firebase
         const app = firebase.initializeApp(firebaseConfig);
         var db = firebase.firestore();
+        
+        // Habilitar persistência offline
+        db.enablePersistence()
+            .catch((err) => {
+                if (err.code == 'failed-precondition') {
+                    console.warn('Persistência offline: múltiplas abas abertas');
+                } else if (err.code == 'unimplemented') {
+                    console.warn('Persistência offline não suportada');
+                }
+            });
     </script>
 
     <!-- Aplicação Principal -->
@@ -529,19 +539,30 @@
         // Carregar jogos do Firestore
         async function loadGames() {
             try {
-                const snapshot = await db.collection('games')
-                    .orderBy('round')
-                    .orderBy('date')
-                    .get();
+                try {
+                    const snapshot = await db.collection('games')
+                        .orderBy('round')
+                        .orderBy('date')
+                        .get();
 
-                games = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    games.push({
-                        id: doc.id,
-                        ...data
+                    games = [];
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        games.push({
+                            id: doc.id,
+                            ...data
+                        });
                     });
-                });
+                    
+                    // Salvar no localStorage como backup
+                    localStorage.setItem('games', JSON.stringify(games));
+                } catch (firebaseError) {
+                    console.warn('Erro ao carregar jogos do Firestore:', firebaseError.message);
+                    console.log('Carregando jogos do localStorage...');
+                    
+                    const cachedGames = localStorage.getItem('games');
+                    games = cachedGames ? JSON.parse(cachedGames) : [];
+                }
 
                 // Encontrar maior rodada
                 if (games.length > 0) {
@@ -551,38 +572,63 @@
                 }
             } catch (error) {
                 console.error('Erro ao carregar jogos:', error);
+                games = [];
             }
         }
 
         // Carregar participantes
         async function loadParticipants() {
             try {
-                const snapshot = await db.collection('participants').get();
-                participants = [];
-                snapshot.forEach(doc => {
-                    participants.push({
-                        id: doc.id,
-                        ...doc.data()
+                try {
+                    const snapshot = await db.collection('participants').get();
+                    participants = [];
+                    snapshot.forEach(doc => {
+                        participants.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
                     });
-                });
+                    
+                    // Salvar no localStorage como backup
+                    localStorage.setItem('participants', JSON.stringify(participants));
+                } catch (firebaseError) {
+                    console.warn('Erro ao carregar participantes do Firestore:', firebaseError.message);
+                    console.log('Carregando participantes do localStorage...');
+                    
+                    const cachedParticipants = localStorage.getItem('participants');
+                    participants = cachedParticipants ? JSON.parse(cachedParticipants) : [];
+                }
             } catch (error) {
                 console.error('Erro ao carregar participantes:', error);
+                participants = [];
             }
         }
 
         // Carregar palpites
         async function loadGuesses() {
             try {
-                const snapshot = await db.collection('guesses').get();
-                guesses = [];
-                snapshot.forEach(doc => {
-                    guesses.push({
-                        id: doc.id,
-                        ...doc.data()
+                try {
+                    const snapshot = await db.collection('guesses').get();
+                    guesses = [];
+                    snapshot.forEach(doc => {
+                        guesses.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
                     });
-                });
+                    
+                    // Salvar no localStorage como backup
+                    localStorage.setItem('guesses', JSON.stringify(guesses));
+                } catch (firebaseError) {
+                    console.warn('Erro ao carregar palpites do Firestore:', firebaseError.message);
+                    console.log('Carregando palpites do localStorage...');
+                    
+                    const cachedGuesses = localStorage.getItem('guesses');
+                    guesses = cachedGuesses ? JSON.parse(cachedGuesses) : [];
+                }
             } catch (error) {
                 console.error('Erro ao carregar palpites:', error);
+                guesses = [];
             }
         }
 
@@ -937,49 +983,72 @@
             }
 
             try {
-                const adminRef = db.collection('admin').doc('password');
-                const doc = await adminRef.get();
+                let isValidPassword = false;
+                
+                try {
+                    // Tentar conectar ao Firestore
+                    const adminRef = db.collection('admin').doc('password');
+                    const doc = await adminRef.get();
 
-                if (!doc.exists) {
-                    // Criar senha padrão se não existir
-                    const hash = simpleHash('admin123');
-                    await adminRef.set({
-                        password: hash,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        defaultPassword: 'admin123'
-                    });
+                    if (!doc.exists) {
+                        // Criar senha padrão se não existir
+                        const hash = simpleHash('admin123');
+                        await adminRef.set({
+                            password: hash,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            defaultPassword: 'admin123'
+                        });
 
-                    // Tentar login novamente
-                    const newDoc = await adminRef.get();
-                    if (simpleHash(password) === newDoc.data().password) {
-                        isAdmin = true;
-                        document.getElementById('admin-login').classList.add('hidden');
-                        document.getElementById('admin-panel').classList.remove('hidden');
-                        showAdminTab('manage-games');
-                        await loadAllData();
-                        errorDiv.classList.add('hidden');
+                        // Salvar no localStorage como backup
+                        localStorage.setItem('adminPassword', hash);
+                        console.log('Senha criada e salva no localStorage');
+
+                        // Tentar login novamente
+                        const newDoc = await adminRef.get();
+                        isValidPassword = simpleHash(password) === newDoc.data().password;
                     } else {
-                        errorDiv.textContent = 'Senha incorreta! Tente "admin123"';
-                        errorDiv.classList.remove('hidden');
+                        const storedHash = doc.data().password;
+                        const inputHash = simpleHash(password);
+
+                        console.log('Hash da senha digitada:', inputHash);
+                        console.log('Hash armazenado:', storedHash);
+
+                        isValidPassword = inputHash === storedHash;
+                        
+                        // Sincronizar com localStorage
+                        localStorage.setItem('adminPassword', storedHash);
                     }
-                } else {
-                    const storedHash = doc.data().password;
+                } catch (firebaseError) {
+                    console.warn('Erro ao conectar ao Firestore:', firebaseError.message);
+                    console.log('Tentando usar localStorage como fallback...');
+                    
+                    // Fallback: usar localStorage
+                    const localPassword = localStorage.getItem('adminPassword');
                     const inputHash = simpleHash(password);
-
-                    console.log('Hash da senha digitada:', inputHash);
-                    console.log('Hash armazenado:', storedHash);
-
-                    if (inputHash === storedHash) {
-                        isAdmin = true;
-                        document.getElementById('admin-login').classList.add('hidden');
-                        document.getElementById('admin-panel').classList.remove('hidden');
-                        showAdminTab('manage-games');
-                        await loadAllData();
-                        errorDiv.classList.add('hidden');
+                    
+                    if (localPassword) {
+                        isValidPassword = inputHash === localPassword;
+                        console.log('Usando autenticação offline (localStorage)');
                     } else {
-                        errorDiv.textContent = 'Senha incorreta! Tente "admin123"';
-                        errorDiv.classList.remove('hidden');
+                        // Se nem localStorage tem, permitir admin123 como padrão
+                        console.log('Nenhuma senha salva, usando padrão admin123');
+                        isValidPassword = password === 'admin123';
+                        if (isValidPassword) {
+                            localStorage.setItem('adminPassword', simpleHash('admin123'));
+                        }
                     }
+                }
+                
+                if (isValidPassword) {
+                    isAdmin = true;
+                    document.getElementById('admin-login').classList.add('hidden');
+                    document.getElementById('admin-panel').classList.remove('hidden');
+                    showAdminTab('manage-games');
+                    await loadAllData();
+                    errorDiv.classList.add('hidden');
+                } else {
+                    errorDiv.textContent = 'Senha incorreta! Tente "admin123"';
+                    errorDiv.classList.remove('hidden');
                 }
             } catch (error) {
                 console.error('Erro no login:', error);
