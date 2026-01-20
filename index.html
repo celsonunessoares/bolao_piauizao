@@ -3,133 +3,279 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bolão Piauizão PRO</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    <title>🏆 Bolão Piauizão Oficial</title>
     <style>
+        body {
+            font-family: Arial;
+            background: #f2f2f2;
+            margin: 0;
+            padding: 0
+        }
+
+        header {
+            background: #00703c;
+            color: #fff;
+            padding: 15px;
+            text-align: center
+        }
+
+        .container {
+            padding: 20px
+        }
+
         .hidden {
             display: none
         }
 
-        .bg-piauui {
-            background: linear-gradient(135deg, #004d2c, #002d62)
+        .card {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 5px #ccc
         }
 
-        .tab-active {
-            border-bottom: 4px solid #facc15;
-            color: #facc15
+        button {
+            padding: 8px 12px;
+            background: #00703c;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer
+        }
+
+        button:hover {
+            opacity: .8
+        }
+
+        input,
+        select {
+            padding: 7px;
+            margin: 5px;
+            width: 95%
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 6px;
+            text-align: center
+        }
+
+        th {
+            background: #fdb913
+        }
+
+        .admin {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px
+        }
+
+        .logout {
+            background: #b00020
         }
     </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
+<body>
 
-    <header class="bg-piauui text-white p-4 flex justify-between">
-        <h1 class="font-black">PIAUIZÃO <span class="text-yellow-400">PRO</span></h1>
-        <nav class="space-x-4">
-            <button onclick="showSection('jogos')">Jogos</button>
-            <button onclick="showSection('ranking')">Ranking</button>
-            <button onclick="showSection('admin')">Admin</button>
-        </nav>
+    <header>
+        <h1>🏆 Bolão Piauizão Oficial</h1>
     </header>
 
-    <main class="p-6">
+    <div class="container">
 
-        <section id="section-jogos">
-            <h2 class="text-2xl font-black">Jogos</h2>
-        </section>
+        <!-- LOGIN -->
+        <div id="loginCard" class="card">
+            <h2>🔐 Login Admin</h2>
+            <input id="user" placeholder="Usuário">
+            <input id="pass" type="password" placeholder="Senha">
+            <button onclick="login()">Entrar</button>
+            <p id="loginMsg"></p>
+        </div>
 
-        <section id="section-ranking" class="hidden">
-            <h2 class="text-2xl font-black">Ranking</h2>
-        </section>
+        <!-- PAINEL ADMIN -->
+        <div id="adminPanel" class="admin hidden">
+            <h2>⚙️ Painel Administrativo</h2>
+            <button class="logout" onclick="logout()">Sair</button>
 
-        <section id="section-admin" class="hidden">
-
-            <!-- LOGIN -->
-            <div id="admin-login" class="max-w-md mx-auto bg-white p-6 rounded shadow">
-                <h2 class="font-black text-xl mb-4">Login Admin</h2>
-                <input id="admin-pass" type="password" placeholder="Senha" class="w-full p-3 border rounded mb-4">
-                <button onclick="loginAdmin()" class="bg-green-600 text-white w-full py-2 rounded font-black">
-                    ENTRAR
-                </button>
+            <div class="card">
+                <h3>➕ Cadastrar Jogo</h3>
+                <input id="timeA" placeholder="Time A">
+                <input id="timeB" placeholder="Time B">
+                <button onclick="addGame()">Cadastrar Jogo</button>
             </div>
 
-            <!-- PAINEL -->
-            <div id="admin-panel" class="hidden max-w-md mx-auto bg-white p-6 rounded shadow space-y-4">
-                <h2 class="font-black text-xl">Painel Admin</h2>
-
-                <input id="new-pass" type="password" placeholder="Nova senha" class="w-full p-3 border rounded">
-
-                <button onclick="changePassword()" class="bg-blue-600 text-white w-full py-2 rounded font-black">
-                    ALTERAR SENHA
-                </button>
-
-                <button onclick="logoutAdmin()" class="bg-red-600 text-white w-full py-2 rounded font-black">
-                    SAIR
-                </button>
+            <div class="card">
+                <h3>📊 Jogos Cadastrados</h3>
+                <div id="gamesList"></div>
             </div>
 
-        </section>
-    </main>
+            <div class="card">
+                <h3>📝 Cadastrar Palpite</h3>
+                <select id="gameSelect"></select>
+                <input id="playerName" placeholder="Nome do Participante">
+                <input id="golsA" placeholder="Gols Time A" type="number">
+                <input id="golsB" placeholder="Gols Time B" type="number">
+                <button onclick="addGuess()">Salvar Palpite</button>
+            </div>
 
-    <div id="notif" class="fixed bottom-4 right-4"></div>
+            <div class="card">
+                <h3>🏁 Registrar Resultado Real</h3>
+                <select id="resultGame"></select>
+                <input id="realA" placeholder="Gols Time A" type="number">
+                <input id="realB" placeholder="Gols Time B" type="number">
+                <button onclick="saveResult()">Salvar Resultado</button>
+            </div>
+
+            <div class="card">
+                <h3>🏅 Ranking</h3>
+                <div id="ranking"></div>
+            </div>
+
+        </div>
+    </div>
 
     <script>
-        /* ================= ADMIN LOCAL ================= */
+        let adminUser = "admin"
+        let adminPass = "1234"
 
-        const DEFAULT_PASS = "admin123";
+        let games = []
+        let guesses = []
+        let results = []
+        let scores = {}
 
-        if (!localStorage.getItem("adminPass")) {
-            localStorage.setItem("adminPass", DEFAULT_PASS);
-        }
-
-        function loginAdmin() {
-            const pass = document.getElementById("admin-pass").value;
-            if (pass === localStorage.getItem("adminPass")) {
-                localStorage.setItem("isAdmin", "true");
-                notify("Bem-vindo, admin!");
-                refreshAdmin();
+        function login() {
+            let u = user.value
+            let p = pass.value
+            if (u == adminUser && p == adminPass) {
+                loginCard.classList.add("hidden")
+                adminPanel.classList.remove("hidden")
             } else {
-                notify("Senha incorreta", "error");
+                loginMsg.innerText = "❌ Login inválido"
             }
         }
 
-        function logoutAdmin() {
-            localStorage.removeItem("isAdmin");
-            refreshAdmin();
+        function logout() {
+            adminPanel.classList.add("hidden")
+            loginCard.classList.remove("hidden")
         }
 
-        function changePassword() {
-            const newPass = document.getElementById("new-pass").value;
-            if (newPass.length < 4) return notify("Senha muito curta", "error");
-            localStorage.setItem("adminPass", newPass);
-            notify("Senha alterada com sucesso!");
+        function addGame() {
+            let a = timeA.value
+            let b = timeB.value
+            if (!a || !b) return
+            games.push({
+                id: Date.now(),
+                a,
+                b
+            })
+            renderGames()
+            renderSelects()
+            timeA.value = ""
+            timeB.value = ""
         }
 
-        function refreshAdmin() {
-            const isAdmin = localStorage.getItem("isAdmin") === "true";
-            document.getElementById("admin-login").classList.toggle("hidden", isAdmin);
-            document.getElementById("admin-panel").classList.toggle("hidden", !isAdmin);
+        function renderGames() {
+            let html = "<table><tr><th>Jogo</th><th>Ação</th></tr>"
+            games.forEach(g => {
+                html += `<tr>
+   <td>${g.a} x ${g.b}</td>
+   <td><button onclick="delGame(${g.id})">🗑️</button></td>
+   </tr>`
+            })
+            html += "</table>"
+            gamesList.innerHTML = html
         }
 
-        function showSection(id) {
-            document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
-            document.getElementById("section-" + id).classList.remove("hidden");
-            if (id === "admin") refreshAdmin();
+        function delGame(id) {
+            games = games.filter(g => g.id != id)
+            renderGames()
+            renderSelects()
         }
 
-        function notify(msg, type = "success") {
-            const n = document.createElement("div");
-            n.className = `p-3 mb-2 rounded text-white ${type==="error"?"bg-red-600":"bg-green-600"}`;
-            n.innerText = msg;
-            document.getElementById("notif").appendChild(n);
-            setTimeout(() => n.remove(), 3000);
+        function renderSelects() {
+            gameSelect.innerHTML = ""
+            resultGame.innerHTML = ""
+            games.forEach(g => {
+                let opt = document.createElement("option")
+                opt.value = g.id
+                opt.innerText = `${g.a} x ${g.b}`
+                gameSelect.appendChild(opt)
+
+                let opt2 = document.createElement("option")
+                opt2.value = g.id
+                opt2.innerText = `${g.a} x ${g.b}`
+                resultGame.appendChild(opt2)
+            })
         }
 
-        showSection("jogos");
+        function addGuess() {
+            let gid = gameSelect.value
+            let name = playerName.value
+            let a = golsA.value
+            let b = golsB.value
+            if (!gid || !name) return
+            guesses.push({
+                gid,
+                name,
+                a,
+                b
+            })
+            playerName.value = ""
+            golsA.value = ""
+            golsB.value = ""
+        }
+
+        function saveResult() {
+            let gid = resultGame.value
+            let a = realA.value
+            let b = realB.value
+            results.push({
+                gid,
+                a,
+                b
+            })
+            calcScores()
+        }
+
+        function calcScores() {
+            scores = {}
+            guesses.forEach(g => {
+                let r = results.find(x => x.gid == g.gid)
+                if (!r) return
+
+                let p = 0
+                let gDiff = g.a - g.b
+                let rDiff = r.a - r.b
+
+                if (gDiff > 0 && rDiff > 0) p = 3
+                else if (gDiff < 0 && rDiff < 0) p = 3
+                else if (gDiff == 0 && rDiff == 0) p = 1
+                else p = 0
+
+                if (!scores[g.name]) scores[g.name] = 0
+                scores[g.name] += p
+            })
+
+            renderRanking()
+        }
+
+        function renderRanking() {
+            let html = "<table><tr><th>Participante</th><th>Pontos</th></tr>"
+            Object.keys(scores).forEach(n => {
+                html += `<tr><td>${n}</td><td>${scores[n]}</td></tr>`
+            })
+            html += "</table>"
+            ranking.innerHTML = html
+        }
     </script>
 
 </body>
