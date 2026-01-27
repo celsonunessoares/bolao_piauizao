@@ -417,6 +417,7 @@
                 matches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderMatches();
                 renderAdminMatches();
+                calculateRanking(); // Recalcula quando os jogos mudam (ex: exclusão)
             });
             unsubs.push(unsubMatches);
 
@@ -438,7 +439,6 @@
             setPlayerUI();
         };
 
-        // NOVO: Função para Deslogar Participante
         window.logoutPlayer = () => {
             playerName = "";
             localStorage.removeItem('bolao_user_name');
@@ -525,13 +525,20 @@
 
         window.toggleDetails = (id) => document.getElementById(`details-${id}`).classList.toggle('hidden');
 
+        // CORREÇÃO NO RANKING: Filtra palpites de jogos excluídos
         function calculateRanking() {
             const userTotals = {};
+            const activeMatchIds = new Set(matches.map(m => m.id));
+
             userGuesses.forEach(guess => {
+                // Se o jogo deste palpite não existir mais na lista de jogos atual, ignore-o
+                if (!activeMatchIds.has(guess.matchId)) return;
+
                 if (!userTotals[guess.userName]) userTotals[guess.userName] = { name: guess.userName, points: 0, count: 0 };
                 userTotals[guess.userName].points += (guess.points || 0);
                 userTotals[guess.userName].count += 1;
             });
+
             const sorted = Object.values(userTotals).sort((a, b) => b.points - a.points || b.count - a.count);
             const rt = document.getElementById('ranking-table-body');
             if (rt) rt.innerHTML = sorted.map((u, i) => `
@@ -701,11 +708,39 @@
             await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'guesses'), { matchId: activeMatchId, userName: playerName, homeBet: hb, awayBet: ab, points: 0, timestamp: Date.now() });
             closeModal('modal-bet'); showToast("Palpite guardado!");
         };
+
+        // CORREÇÃO NA EXCLUSÃO: Remove palpites órfãos do banco
         window.deleteMatchAdmin = async () => {
-            if (!activeMatchId || !confirm("Eliminar este jogo?")) return;
-            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'matches', activeMatchId));
-            closeModal('modal-match-admin');
+            if (!activeMatchId || !confirm("Deseja eliminar este jogo? Isso removerá permanentemente todos os palpites e pontos vinculados a ele.")) return;
+            
+            try {
+                showToast("Eliminando jogo e palpites...");
+                
+                // 1. Identificar palpites associados
+                const betsToDelete = userGuesses.filter(g => g.matchId === activeMatchId);
+                
+                // 2. Criar Batch para deletar tudo de uma vez
+                const batch = writeBatch(db);
+                
+                // Adicionar exclusão do jogo
+                batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'matches', activeMatchId));
+                
+                // Adicionar exclusão de cada palpite
+                betsToDelete.forEach(b => {
+                    batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', b.id));
+                });
+                
+                // Executar
+                await batch.commit();
+                
+                closeModal('modal-match-admin');
+                showToast("Jogo e palpites eliminados.");
+            } catch (err) {
+                console.error(err);
+                showToast("Erro ao eliminar jogo.");
+            }
         };
+
         window.exportRankingPDF = () => window.print();
 
         init();
