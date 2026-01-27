@@ -18,7 +18,6 @@
             background-color: #f3f4f6;
             font-family: 'Inter', sans-serif;
             font-size: 14px;
-            /* Tamanho padrão */
         }
 
         .bg-piaui-green {
@@ -81,7 +80,6 @@
             display: flex;
         }
 
-        /* Estilo para impressão do PDF */
         @media print {
 
             header,
@@ -175,7 +173,7 @@
 
         <!-- VIEW: HOME -->
         <section id="view-home" class="view-content">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
                 <div>
                     <h2 class="text-xl md:text-2xl font-black text-gray-800 uppercase tracking-tighter">Jogos da Rodada
                     </h2>
@@ -189,14 +187,39 @@
                             <p class="font-bold text-piaui-blue text-sm leading-tight" id="display-user-name"></p>
                         </div>
                         <button onclick="logoutPlayer()"
-                            class="text-[9px] text-red-500 font-black hover:text-red-700 transition ml-3 bg-red-50 px-2 py-1 rounded-md uppercase border border-red-100">
-                            SAIR
-                        </button>
+                            class="text-[9px] text-red-500 font-black hover:text-red-700 transition ml-3 bg-red-50 px-2 py-1 rounded-md uppercase border border-red-100">SAIR</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Identificação rápida -->
+            <!-- Banner de Regras -->
+            <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6 shadow-sm">
+                <div class="flex items-start space-x-3">
+                    <div class="text-piaui-blue mt-0.5"><i class="fas fa-info-circle"></i></div>
+                    <div>
+                        <h4 class="text-[10px] font-black text-piaui-blue uppercase tracking-widest mb-2">Regras de
+                            Pontuação (Placar Exato)</h4>
+                        <div class="flex flex-wrap gap-x-6 gap-y-2">
+                            <div class="flex items-center text-[11px] text-blue-900 font-bold">
+                                <span
+                                    class="bg-piaui-green text-white w-4 h-4 rounded-md flex items-center justify-center mr-2 text-[9px]">3</span>
+                                <span>3 pontos: Acertou Placar (Vitória)</span>
+                            </div>
+                            <div class="flex items-center text-[11px] text-blue-900 font-bold">
+                                <span
+                                    class="bg-blue-600 text-white w-4 h-4 rounded-md flex items-center justify-center mr-2 text-[9px]">1</span>
+                                <span>1 ponto: Acertou Placar (Empate)</span>
+                            </div>
+                            <div class="flex items-center text-[11px] text-blue-900 font-bold opacity-70">
+                                <span
+                                    class="bg-gray-400 text-white w-4 h-4 rounded-md flex items-center justify-center mr-2 text-[9px]">0</span>
+                                <span>0 ponto: Errou o Placar</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div id="auth-box"
                 class="bg-white p-5 rounded-2xl shadow-sm mb-6 max-w-md mx-auto no-print border border-gray-100">
                 <h3 class="text-sm font-bold mb-3 text-center text-gray-700 uppercase tracking-tight">Identifique-se
@@ -253,10 +276,18 @@
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <h2 class="text-xl font-black text-red-600 flex items-center uppercase tracking-tighter"><i
                         class="fas fa-user-shield mr-2"></i>Painel Admin</h2>
-                <div class="flex space-x-2 w-full md:w-auto">
+                <div class="flex flex-wrap gap-2 w-full md:w-auto">
                     <button onclick="openMatchModal()"
-                        class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition shadow-md text-xs uppercase tracking-widest">
+                        class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition shadow-md text-xs uppercase tracking-widest min-w-[120px]">
                         <i class="fas fa-plus mr-1"></i>Novo Jogo
+                    </button>
+                    <button onclick="openParticipantsManager()"
+                        class="flex-1 bg-piaui-blue text-white px-4 py-2 rounded-lg font-bold hover:bg-opacity-90 transition shadow-md text-xs uppercase tracking-widest min-w-[120px]">
+                        <i class="fas fa-users mr-1"></i>Participantes
+                    </button>
+                    <button onclick="recalculateAllPoints()"
+                        class="flex-1 bg-orange-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-600 transition shadow-md text-xs uppercase tracking-widest min-w-[120px]">
+                        <i class="fas fa-sync-alt mr-1"></i>Recalcular Ranking
                     </button>
                     <button onclick="logoutAdmin()"
                         class="bg-gray-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-700 transition text-[10px] uppercase">Sair</button>
@@ -309,15 +340,13 @@
         </div>
     </div>
 
-    <!-- Modal: Cadastro/Edição de Jogo + Importação em Massa -->
+    <!-- Modal: Cadastro de Jogo / Importação -->
     <div id="modal-match-admin" class="modal no-print">
         <div
             class="bg-white rounded-2xl p-6 max-w-4xl w-full mx-4 shadow-2xl overflow-y-auto max-h-[90vh] border border-gray-200">
             <h3 class="text-xl font-black mb-6 text-center text-gray-800 uppercase tracking-tight"
                 id="match-admin-title">Configurar Jogo</h3>
-
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Coluna: Dados do Jogo -->
                 <div class="space-y-4">
                     <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
                         <div class="grid grid-cols-2 gap-3">
@@ -338,7 +367,6 @@
                                 class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs font-bold outline-none">
                         </div>
                     </div>
-
                     <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
                         <div>
                             <label class="block text-[9px] font-black text-gray-500 mb-1 uppercase">Time
@@ -371,14 +399,12 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="flex items-center space-x-3 bg-yellow-50 p-3 rounded-xl border border-yellow-200">
                         <input type="checkbox" id="admin-is-finished" class="w-5 h-5 accent-yellow-600 cursor-pointer">
                         <label for="admin-is-finished"
                             class="text-[10px] font-black text-yellow-900 uppercase cursor-pointer tracking-tight">ENCERRAR
                             E CALCULAR PONTOS</label>
                     </div>
-
                     <div class="pt-1 flex flex-col space-y-2">
                         <button onclick="saveMatchAdmin()"
                             class="bg-blue-600 text-white py-2.5 rounded-lg font-black hover:bg-blue-700 transition shadow-md text-xs uppercase">Gravar
@@ -388,8 +414,6 @@
                             Jogo</button>
                     </div>
                 </div>
-
-                <!-- Coluna: Importação -->
                 <div class="lg:border-l lg:pl-8 space-y-3">
                     <label class="block text-[10px] font-black text-piaui-green uppercase tracking-widest">Importar
                         Lista de Palpites</label>
@@ -406,6 +430,24 @@
         </div>
     </div>
 
+    <!-- Modal: Gerenciar Participantes -->
+    <div id="modal-participants" class="modal no-print">
+        <div class="bg-white rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl border border-gray-100">
+            <h3 class="text-xl font-black mb-4 text-center text-piaui-blue uppercase tracking-tight">Gerenciar
+                Participantes</h3>
+            <p class="text-[10px] text-gray-400 text-center mb-6 uppercase font-bold">Edite ou exclua participantes da
+                rodada</p>
+
+            <div id="participants-list"
+                class="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar border-y py-4 border-gray-100">
+                <div class="text-center text-gray-300 text-[10px] py-10 uppercase italic">Carregando lista...</div>
+            </div>
+
+            <button onclick="closeModal('modal-participants')"
+                class="w-full mt-6 text-gray-400 font-bold py-2 uppercase text-[10px] hover:text-gray-600 transition tracking-widest">Fechar</button>
+        </div>
+    </div>
+
     <!-- Notification Toast -->
     <div id="toast"
         class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-2xl shadow-2xl hidden z-[300] border border-gray-700">
@@ -415,7 +457,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, writeBatch, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAdlBq3u0C5npsi_pB-CYxPJxxlIj1ucYg",
@@ -476,10 +518,13 @@
                 userGuesses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderMatches();
                 calculateRanking();
+                if (document.getElementById('modal-participants').classList.contains('active')) {
+                    renderParticipantsList();
+                }
             }));
         }
 
-        // --- RENDER ---
+        // --- CORE UI ---
         window.setPlayerName = () => {
             let nameInput = document.getElementById('input-player-name').value.trim();
             if (!nameInput) return showToast("Digite seu nome!");
@@ -509,7 +554,22 @@
                 return;
             }
 
-            const sorted = [...matches].sort((a, b) => (a.round + a.date).localeCompare(b.round + b.date));
+            // NOVA LÓGICA DE ORDENAÇÃO: Abertos primeiro, depois encerrados
+            const sorted = [...matches].sort((a, b) => {
+                // Prioriza status "open"
+                if (a.status === 'open' && b.status === 'finished') return -1;
+                if (a.status === 'finished' && b.status === 'open') return 1;
+
+                // Se ambos tiverem o mesmo status, ordena por rodada/data
+                if (a.status === 'open') {
+                    // Para abertos, os mais próximos primeiro (crescente)
+                    return (a.round + a.date).localeCompare(b.round + b.date);
+                } else {
+                    // Para encerrados, os mais recentes primeiro (decrescente)
+                    return (b.round + b.date).localeCompare(a.round + a.date);
+                }
+            });
+
             matchesList.innerHTML = sorted.map(match => {
                 const isFinished = match.status === 'finished';
                 const matchBets = userGuesses.filter(g => g.matchId === match.id);
@@ -617,7 +677,136 @@
             }
         }
 
-        // --- IMPORT & ADMIN ---
+        // --- ADMIN: PARTICIPANTS MANAGEMENT ---
+        window.openParticipantsManager = () => {
+            document.getElementById('modal-participants').classList.add('active');
+            renderParticipantsList();
+        };
+
+        function renderParticipantsList() {
+            const container = document.getElementById('participants-list');
+            if (!container) return;
+
+            const uniqueNames = [...new Set(userGuesses.map(g => (g.userName || 'ANÔNIMO').trim().toUpperCase()))].sort();
+
+            if (uniqueNames.length === 0) {
+                container.innerHTML = `<div class="text-center text-gray-300 text-[10px] py-10 uppercase italic">Nenhum palpite registrado.</div>`;
+                return;
+            }
+
+            container.innerHTML = uniqueNames.map((name, index) => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200 group hover:border-piaui-blue transition-colors">
+                    <div class="flex-1 mr-4">
+                        <input type="text" id="edit-name-input-${index}" value="${name}" 
+                               class="w-full bg-white border border-gray-100 rounded px-2 py-1 font-black text-xs text-gray-700 uppercase focus:ring-1 focus:ring-piaui-blue outline-none transition-all">
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="saveNewParticipantName('${name}', ${index})" 
+                                title="Salvar Alteração"
+                                class="bg-piaui-green text-white p-2 rounded-lg hover:scale-105 transition active:scale-95 shadow-sm">
+                            <i class="fas fa-save text-[10px]"></i>
+                        </button>
+                        <button onclick="deleteParticipant('${name}')" 
+                                title="Excluir Participante"
+                                class="bg-red-500 text-white p-2 rounded-lg hover:scale-105 transition active:scale-95 shadow-sm">
+                            <i class="fas fa-trash-alt text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.saveNewParticipantName = async (oldName, index) => {
+            const input = document.getElementById(`edit-name-input-${index}`);
+            const newName = input.value.trim().toUpperCase();
+
+            if (!newName || newName === oldName) {
+                return showToast("Nome inválido ou sem alteração");
+            }
+
+            if (!confirm(`Confirmar alteração de "${oldName}" para "${newName}"?`)) return;
+
+            try {
+                const betsToUpdate = userGuesses.filter(g => (g.userName || '').toUpperCase() === oldName);
+                if (betsToUpdate.length === 0) return showToast("Nenhum palpite encontrado");
+
+                const batch = writeBatch(db);
+                betsToUpdate.forEach(bet => {
+                    const betRef = doc(db, 'artifacts', appId, 'public', 'data', 'guesses', bet.id);
+                    batch.update(betRef, { userName: newName });
+                });
+
+                await batch.commit();
+                showToast("Nome atualizado!");
+                
+                if (oldName === playerName) {
+                    playerName = newName;
+                    localStorage.setItem('bolao_user_name', playerName);
+                    setPlayerUI();
+                }
+                renderParticipantsList();
+            } catch (err) {
+                console.error(err);
+                showToast("Erro ao salvar.");
+            }
+        };
+
+        window.deleteParticipant = async (name) => {
+            if (!confirm(`ATENÇÃO: Isso excluirá permanentemente todos os palpites de "${name}". Continuar?`)) return;
+
+            try {
+                const betsToDelete = userGuesses.filter(g => (g.userName || '').toUpperCase() === name);
+                if (betsToDelete.length === 0) return showToast("Nenhum palpite para excluir");
+
+                const batch = writeBatch(db);
+                betsToDelete.forEach(bet => {
+                    const betRef = doc(db, 'artifacts', appId, 'public', 'data', 'guesses', bet.id);
+                    batch.delete(betRef);
+                });
+
+                await batch.commit();
+                showToast(`Participante "${name}" removido.`);
+                
+                if (name === playerName) logoutPlayer();
+                renderParticipantsList();
+            } catch (err) {
+                console.error(err);
+                showToast("Erro ao excluir.");
+            }
+        };
+
+        // --- ADMIN: LOGIC & BULK ---
+        
+        window.recalculateAllPoints = async () => {
+            if (!confirm("Isso irá recalcular a pontuação de TODOS os palpites baseando-se nos placares atuais dos jogos encerrados. Continuar?")) return;
+            
+            showToast("Recalculando...");
+            const finishedMatches = matches.filter(m => m.status === 'finished');
+            const batch = writeBatch(db);
+            let count = 0;
+
+            userGuesses.forEach(bet => {
+                const match = finishedMatches.find(m => m.id === bet.matchId);
+                if (match) {
+                    let pts = 0;
+                    if (Number(bet.homeBet) === Number(match.homeScore) && Number(bet.awayBet) === Number(match.awayScore)) {
+                        pts = (Number(match.homeScore) === Number(match.awayScore)) ? 1 : 3;
+                    }
+                    if (Number(bet.points) !== pts) {
+                        batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', bet.id), { points: Number(pts) });
+                        count++;
+                    }
+                }
+            });
+
+            if (count > 0) {
+                await batch.commit();
+                showToast(`${count} palpites atualizados!`);
+            } else {
+                showToast("Tudo já está sincronizado.");
+            }
+        };
+
         window.processBulkImport = async () => {
             if (!activeMatchId) return showToast("Grave o jogo primeiro!");
             const input = document.getElementById('bulk-bets-input').value;
@@ -625,11 +814,9 @@
             let count = 0;
             const batch = writeBatch(db);
 
-            // Verificação de pontuação se o jogo já estiver encerrado
             const match = matches.find(m => m.id === activeMatchId);
             const isFinished = match?.status === 'finished';
-            const realResult = match ? (match.homeScore > match.awayScore ? 'home' : (match.homeScore < match.awayScore ? 'away' : 'draw')) : null;
-
+            
             lines.forEach(line => {
                 const res = line.match(/(\d+)\s*[xX]\s*(\d+)\s+(.+)/i);
                 if (res) {
@@ -638,9 +825,10 @@
                     const name = res[3].trim().toUpperCase();
                     
                     let pts = 0;
-                    if (isFinished && realResult) {
-                        const betResult = hB > aB ? 'home' : (hB < aB ? 'away' : 'draw');
-                        if (betResult === realResult) pts = (realResult === 'draw') ? 1 : 3;
+                    if (isFinished) {
+                        if (hB === Number(match.homeScore) && aB === Number(match.awayScore)) {
+                            pts = (hB === aB) ? 1 : 3;
+                        }
                     }
 
                     const betRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'guesses'));
@@ -678,6 +866,7 @@
                     activeMatchId = mId;
                 }
                 if (isFin) await processPoints(mId, hS, aS);
+                
                 showToast("Sucesso!");
                 renderAdminMatches();
                 if (isFin) closeModal('modal-match-admin');
@@ -685,14 +874,16 @@
         };
 
         async function processPoints(matchId, realH, realA) {
-            const realResult = realH > realA ? 'home' : (realH < realA ? 'away' : 'draw');
-            const q = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'guesses'));
-            const bets = q.docs.map(d => ({id: d.id, ...d.data()})).filter(g => g.matchId === matchId);
-            
+            const bets = userGuesses.filter(g => g.matchId === matchId);
             const batch = writeBatch(db);
+            
             bets.forEach(b => {
-                const betRes = b.homeBet > b.awayBet ? 'home' : (b.homeBet < b.awayBet ? 'away' : 'draw');
-                let pts = (betRes === realResult) ? (realResult === 'draw' ? 1 : 3) : 0;
+                let pts = 0;
+                if (Number(b.homeBet) === Number(realH) && Number(b.awayBet) === Number(realA)) {
+                    pts = (realH === realA) ? 1 : 3;
+                } else {
+                    pts = 0;
+                }
                 batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', b.id), { points: Number(pts) });
             });
             if (bets.length > 0) await batch.commit();
@@ -763,8 +954,7 @@
         };
         window.deleteMatchAdmin = async () => {
             if (!activeMatchId || !confirm("Remover jogo e palpites?")) return;
-            const q = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'guesses'));
-            const bets = q.docs.filter(d => d.data().matchId === activeMatchId);
+            const bets = userGuesses.filter(d => d.matchId === activeMatchId);
             const batch = writeBatch(db);
             batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'matches', activeMatchId));
             bets.forEach(b => batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', b.id)));
