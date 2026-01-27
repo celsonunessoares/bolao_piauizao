@@ -3,281 +3,705 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>🏆 Bolão Piauizão Oficial</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolão Piauizão - Campeonato Piauiense</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
+        :root {
+            --pi-green: #008248;
+            --pi-yellow: #ffed00;
+            --pi-blue: #003da5;
+        }
+
         body {
-            font-family: Arial;
-            background: #f2f2f2;
-            margin: 0;
-            padding: 0
+            background-color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
         }
 
-        header {
-            background: #00703c;
-            color: #fff;
-            padding: 15px;
-            text-align: center
+        .bg-piaui-green {
+            background-color: var(--pi-green);
         }
 
-        .container {
-            padding: 20px
+        .text-piaui-green {
+            color: var(--pi-green);
         }
 
-        .hidden {
-            display: none
+        .bg-piaui-yellow {
+            background-color: var(--pi-yellow);
         }
 
-        .card {
-            background: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 0 5px #ccc
+        .border-piaui-blue {
+            border-color: var(--pi-blue);
         }
 
-        button {
-            padding: 8px 12px;
-            background: #00703c;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer
+        .card-match {
+            transition: transform 0.2s;
         }
 
-        button:hover {
-            opacity: .8
+        .card-match:hover {
+            transform: translateY(-2px);
         }
 
-        input,
-        select {
-            padding: 7px;
-            margin: 5px;
-            width: 95%
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--pi-green);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
         }
 
-        table {
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
         }
 
-        th,
-        td {
-            border: 1px solid #ccc;
-            padding: 6px;
-            text-align: center
-        }
-
-        th {
-            background: #fdb913
-        }
-
-        .admin {
-            background: #fff;
-            padding: 15px;
-            border-radius: 8px
-        }
-
-        .logout {
-            background: #b00020
+        .modal.active {
+            display: flex;
         }
     </style>
 </head>
 
-<body>
+<body class="pb-12">
 
-    <header>
-        <h1>🏆 Bolão Piauizão Oficial</h1>
+    <!-- Header -->
+    <header class="bg-piaui-green text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white p-2 rounded-full">
+                    <i class="fas fa-futbol text-piaui-green text-2xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight">Bolão <span class="text-piaui-yellow">Piauizão</span></h1>
+            </div>
+            <nav id="main-nav" class="hidden md:flex space-x-6 font-medium">
+                <a href="#" onclick="switchView('home')" class="hover:text-piaui-yellow">Início</a>
+                <a href="#" onclick="switchView('ranking')" class="hover:text-piaui-yellow">Ranking</a>
+                <a href="#" onclick="toggleAdminLogin()" class="opacity-50 hover:opacity-100"><i
+                        class="fas fa-lock"></i></a>
+            </nav>
+            <button class="md:hidden text-2xl" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
     </header>
 
-    <div class="container">
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden bg-piaui-green text-white px-4 py-4 space-y-4 border-t border-green-700">
+        <a href="#" onclick="switchView('home')" class="block py-2">Início</a>
+        <a href="#" onclick="switchView('ranking')" class="block py-2">Ranking</a>
+        <a href="#" onclick="toggleAdminLogin()" class="block py-2 text-yellow-300">Acesso Admin</a>
+    </div>
 
-        <!-- LOGIN -->
-        <div id="loginCard" class="card">
-            <h2>🔐 Login Admin</h2>
-            <input id="user" placeholder="Usuário">
-            <input id="pass" type="password" placeholder="Senha">
-            <button onclick="login()">Entrar</button>
-            <p id="loginMsg"></p>
-        </div>
+    <main class="container mx-auto px-4 mt-8">
 
-        <!-- PAINEL ADMIN -->
-        <div id="adminPanel" class="admin hidden">
-            <h2>⚙️ Painel Administrativo</h2>
-            <button class="logout" onclick="logout()">Sair</button>
-
-            <div class="card">
-                <h3>➕ Cadastrar Jogo</h3>
-                <input id="timeA" placeholder="Time A">
-                <input id="timeB" placeholder="Time B">
-                <button onclick="addGame()">Cadastrar Jogo</button>
+        <!-- VIEW: HOME (Participante) -->
+        <section id="view-home" class="view-content">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-800">Jogos da Rodada</h2>
+                    <p class="text-gray-600">Dê seus palpites e mostre que você entende do Piauiense!</p>
+                </div>
+                <div id="user-info" class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-piaui-blue hidden">
+                    <p class="text-sm text-gray-500">Logado como:</p>
+                    <p class="font-bold text-piaui-blue" id="display-user-name"></p>
+                </div>
             </div>
 
-            <div class="card">
-                <h3>📊 Jogos Cadastrados</h3>
-                <div id="gamesList"></div>
+            <!-- Identificação -->
+            <div id="auth-box" class="bg-white p-6 rounded-2xl shadow-md mb-8 max-w-md mx-auto">
+                <h3 class="text-lg font-bold mb-4 text-center">Para começar, diga-nos seu nome</h3>
+                <div class="flex space-x-2">
+                    <input type="text" id="input-player-name" placeholder="Seu nome completo"
+                        class="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 outline-none">
+                    <button onclick="setPlayerName()"
+                        class="bg-piaui-green text-white px-6 py-2 rounded-lg font-bold hover:bg-opacity-90 transition">Entrar</button>
+                </div>
             </div>
 
-            <div class="card">
-                <h3>📝 Cadastrar Palpite</h3>
-                <select id="gameSelect"></select>
-                <input id="playerName" placeholder="Nome do Participante">
-                <input id="golsA" placeholder="Gols Time A" type="number">
-                <input id="golsB" placeholder="Gols Time B" type="number">
-                <button onclick="addGuess()">Salvar Palpite</button>
+            <!-- Lista de Jogos -->
+            <div id="matches-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="col-span-full flex flex-col items-center justify-center py-12">
+                    <div class="loader mb-4"></div>
+                    <p class="text-gray-500 font-medium">Conectando ao Piauizão...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: RANKING -->
+        <section id="view-ranking" class="view-content hidden">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800">Classificação Geral</h2>
+                <button onclick="exportRankingPDF()"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    <i class="fas fa-file-pdf mr-2"></i>Exportar PDF
+                </button>
             </div>
 
-            <div class="card">
-                <h3>🏁 Registrar Resultado Real</h3>
-                <select id="resultGame"></select>
-                <input id="realA" placeholder="Gols Time A" type="number">
-                <input id="realB" placeholder="Gols Time B" type="number">
-                <button onclick="saveResult()">Salvar Resultado</button>
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 border-b">
+                        <tr>
+                            <th class="px-6 py-4 font-bold text-gray-700">Pos</th>
+                            <th class="px-6 py-4 font-bold text-gray-700">Participante</th>
+                            <th class="px-6 py-4 font-bold text-gray-700 text-center">Palpites</th>
+                            <th class="px-6 py-4 font-bold text-gray-700 text-right">Pontos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ranking-table-body"></tbody>
+                </table>
             </div>
+        </section>
 
-            <div class="card">
-                <h3>🏅 Ranking</h3>
-                <div id="ranking"></div>
+        <!-- VIEW: ADMIN -->
+        <section id="view-admin" class="view-content hidden">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                <h2 class="text-3xl font-bold text-red-600"><i class="fas fa-tools mr-2"></i>Painel Administrativo</h2>
+                <div class="flex space-x-2">
+                    <button onclick="openMatchModal()"
+                        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                        <i class="fas fa-plus mr-2"></i>Novo Jogo
+                    </button>
+                    <button onclick="logoutAdmin()"
+                        class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">Sair</button>
+                </div>
             </div>
+            <div class="grid grid-cols-1 gap-4" id="admin-matches-list"></div>
+        </section>
+    </main>
 
+    <!-- Modals -->
+    <div id="modal-bet" class="modal">
+        <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl">
+            <h3 class="text-xl font-bold mb-6 text-center" id="modal-bet-title">Seu Palpite</h3>
+            <div class="flex items-center justify-between mb-8 space-x-4">
+                <div class="text-center flex-1">
+                    <p class="font-bold text-sm mb-2 truncate" id="home-team-name"></p>
+                    <input type="number" id="bet-home"
+                        class="w-16 h-16 text-2xl text-center border-2 border-gray-200 rounded-xl focus:border-piaui-green outline-none"
+                        min="0" value="0">
+                </div>
+                <div class="text-2xl font-bold text-gray-400">X</div>
+                <div class="text-center flex-1">
+                    <p class="font-bold text-sm mb-2 truncate" id="away-team-name"></p>
+                    <input type="number" id="bet-away"
+                        class="w-16 h-16 text-2xl text-center border-2 border-gray-200 rounded-xl focus:border-piaui-green outline-none"
+                        min="0" value="0">
+                </div>
+            </div>
+            <div class="flex flex-col space-y-3">
+                <button onclick="saveBet()"
+                    class="bg-piaui-green text-white py-3 rounded-xl font-bold hover:bg-opacity-90">Confirmar
+                    Palpite</button>
+                <button onclick="closeModal('modal-bet')" class="text-gray-500 py-2">Cancelar</button>
+            </div>
         </div>
     </div>
 
-    <script>
-        let adminUser = "admin"
-        let adminPass = "1234"
+    <div id="modal-admin-login" class="modal">
+        <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl">
+            <h3 class="text-xl font-bold mb-6 text-center">Acesso Restrito</h3>
+            <input type="password" id="admin-pass" placeholder="Senha do Admin"
+                class="w-full border rounded-lg px-4 py-3 mb-4 focus:ring-2 focus:ring-red-500 outline-none">
+            <button onclick="loginAdmin()"
+                class="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700">Entrar no
+                Painel</button>
+            <button onclick="closeModal('modal-admin-login')" class="w-full text-gray-500 py-2 mt-2">Fechar</button>
+        </div>
+    </div>
 
-        let games = []
-        let guesses = []
-        let results = []
-        let scores = {}
+    <div id="modal-match-admin" class="modal">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+            <h3 class="text-xl font-bold mb-6 text-center" id="match-admin-title">Configurar Jogo</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">TIME MANDANTE</label>
+                    <input type="text" id="admin-home-team" class="w-full border rounded-lg px-4 py-2">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">TIME VISITANTE</label>
+                    <input type="text" id="admin-away-team" class="w-full border rounded-lg px-4 py-2">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">PLACAR REAL (HOME)</label>
+                        <input type="number" id="admin-home-score" class="w-full border rounded-lg px-4 py-2" value="0">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">PLACAR REAL (AWAY)</label>
+                        <input type="number" id="admin-away-score" class="w-full border rounded-lg px-4 py-2" value="0">
+                    </div>
+                </div>
+                <div>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" id="admin-is-finished">
+                        <span class="text-sm font-bold">Jogo Encerrado (Calcula Pontos)</span>
+                    </label>
+                </div>
+                <div class="pt-4 flex flex-col space-y-2">
+                    <button onclick="saveMatchAdmin()"
+                        class="bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">Salvar Jogo</button>
+                    <button onclick="deleteMatchAdmin()" id="btn-delete-match"
+                        class="hidden bg-red-100 text-red-600 py-3 rounded-xl font-bold hover:bg-red-200">Excluir
+                        Jogo</button>
+                    <button onclick="closeModal('modal-match-admin')" class="text-gray-500 py-2">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        function login() {
-            let u = user.value
-            let p = pass.value
-            if (u == adminUser && p == adminPass) {
-                loginCard.classList.add("hidden")
-                adminPanel.classList.remove("hidden")
-            } else {
-                loginMsg.innerText = "❌ Login inválido"
+    <!-- Notification Toast -->
+    <div id="toast"
+        class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-2xl hidden z-[200]">
+        <span id="toast-msg">Mensagem aqui</span>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- CONFIGURAÇÃO FIREBASE ---
+        let firebaseConfig = {
+            apiKey: "AIzaSyAdlBq3u0C5npsi_pB-CYxPJxxlIj1ucYg",
+            authDomain: "bolaopiauizao.firebaseapp.com",
+            projectId: "bolaopiauizao",
+            storageBucket: "bolaopiauizao.firebasestorage.app",
+            messagingSenderId: "126657670519",
+            appId: "1:126657670519:web:12c310049e4bc69ef84572",
+            measurementId: "G-MKSKR9SL5R"
+        };
+        
+        try {
+            if (typeof __firebase_config !== 'undefined' && __firebase_config && __firebase_config !== "{}") {
+                firebaseConfig = JSON.parse(__firebase_config);
+            }
+        } catch(e) { console.error("Falha ao ler config dinâmica"); }
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'bolao-piauizao-local';
+        const matchesList = document.getElementById('matches-list');
+
+        let auth, db, app;
+        let currentUser = null;
+        let isAdmin = false;
+        let matches = [];
+        let userGuesses = [];
+        let activeMatchId = null;
+        let playerName = localStorage.getItem('bolao_user_name') || "";
+        let unsubs = [];
+
+        async function initSystem() {
+            try {
+                // REGRA 3: AUTENTICAÇÃO ANTES DE QUERIES
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    currentUser = user;
+                    if (user) {
+                        startListeners();
+                        if (playerName) setPlayerUI();
+                    }
+                });
+            } catch (err) {
+                console.error("Erro Auth:", err);
+                displayError("Erro de Autenticação", err);
             }
         }
 
-        function logout() {
-            adminPanel.classList.add("hidden")
-            loginCard.classList.remove("hidden")
+        function displayError(title, err) {
+            if (!matchesList) return;
+            let errorMessage = err.message || 'Erro desconhecido';
+            let extraInfo = '';
+
+            if (err.code === 'permission-denied' || errorMessage.toLowerCase().includes('permissions')) {
+                title = "Erro de Permissão (Firestore)";
+                extraInfo = `
+                    <div class="text-left bg-gray-50 p-4 rounded-lg mt-4 border border-red-200">
+                        <p class="font-bold text-red-700 mb-2">Como resolver no Console do Firebase:</p>
+                        <ol class="list-decimal list-inside text-xs text-gray-600 space-y-2">
+                            <li>Vá em <b>Firestore Database</b> no menu lateral.</li>
+                            <li>Clique na aba <b>Rules</b> (Regras).</li>
+                            <li>Cole o código abaixo para permitir acesso público de teste:</li>
+                        </ol>
+                        <pre class="bg-gray-800 text-green-400 p-2 rounded mt-2 text-[10px] overflow-x-auto">
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}</pre>
+                        <p class="text-[10px] text-gray-400 mt-2">* Em produção, restrinja o acesso apenas a usuários autenticados.</p>
+                    </div>
+                `;
+            } else if (err.code === 'auth/admin-restricted-operation') {
+                title = "Login Anônimo Desativado";
+                extraInfo = `
+                    <div class="text-left bg-gray-50 p-4 rounded-lg mt-4 border border-gray-200">
+                        <p class="font-bold text-gray-700 mb-2">Como ativar:</p>
+                        <p class="text-xs text-gray-600">Vá em <b>Authentication</b> > <b>Sign-in method</b> > Ative <b>Anonymous</b>.</p>
+                    </div>
+                `;
+            }
+
+            matchesList.innerHTML = `
+                <div class="col-span-full text-center py-8 px-4 bg-white rounded-2xl shadow-sm border border-red-100">
+                    <i class="fas fa-lock text-red-500 text-3xl mb-4"></i>
+                    <p class="text-red-600 font-bold mb-1">${title}</p>
+                    <p class="text-[10px] text-gray-400 font-mono italic">${errorMessage}</p>
+                    ${extraInfo}
+                    <button onclick="location.reload()" class="mt-6 bg-piaui-green text-white px-6 py-2 rounded-lg text-sm font-bold shadow-md">Tentar Novamente</button>
+                </div>
+            `;
         }
 
-        function addGame() {
-            let a = timeA.value
-            let b = timeB.value
-            if (!a || !b) return
-            games.push({
-                id: Date.now(),
-                a,
-                b
-            })
-            renderGames()
-            renderSelects()
-            timeA.value = ""
-            timeB.value = ""
+        if (!firebaseConfig.projectId) {
+            if (matchesList) {
+                matchesList.innerHTML = `
+                    <div class="col-span-full bg-white p-8 rounded-2xl shadow-md border-l-8 border-red-500">
+                        <h3 class="text-xl font-bold text-red-600 mb-2">Configuração Ausente</h3>
+                        <p class="text-gray-600">Copie as chaves do seu projeto Firebase para o código.</p>
+                    </div>
+                `;
+            }
+        } else {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            initSystem();
         }
 
-        function renderGames() {
-            let html = "<table><tr><th>Jogo</th><th>Ação</th></tr>"
-            games.forEach(g => {
-                html += `<tr>
-   <td>${g.a} x ${g.b}</td>
-   <td><button onclick="delGame(${g.id})">🗑️</button></td>
-   </tr>`
-            })
-            html += "</table>"
-            gamesList.innerHTML = html
+        function startListeners() {
+            if (!currentUser) return;
+            unsubs.forEach(u => u());
+            unsubs = [];
+
+            // REGRA 1: CAMINHOS ESTRITOS
+            const qMatches = collection(db, 'artifacts', appId, 'public', 'data', 'matches');
+            const unsubMatches = onSnapshot(qMatches, 
+                (snapshot) => {
+                    matches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderMatches();
+                    renderAdminMatches();
+                }, 
+                (err) => displayError("Erro de Permissão", err)
+            );
+            unsubs.push(unsubMatches);
+
+            const qGuesses = collection(db, 'artifacts', appId, 'public', 'data', 'guesses');
+            const unsubGuesses = onSnapshot(qGuesses, 
+                (snapshot) => {
+                    userGuesses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderMatches();
+                    calculateRanking();
+                },
+                (err) => console.error("Guess error:", err)
+            );
+            unsubs.push(unsubGuesses);
         }
 
-        function delGame(id) {
-            games = games.filter(g => g.id != id)
-            renderGames()
-            renderSelects()
+        // --- LÓGICA DE RENDERIZAÇÃO ---
+        window.setPlayerName = () => {
+            const nameInput = document.getElementById('input-player-name').value.trim();
+            if (!nameInput) return showToast("Por favor, digite seu nome.");
+            playerName = nameInput;
+            localStorage.setItem('bolao_user_name', playerName);
+            setPlayerUI();
+            showToast(`Bem-vindo, ${playerName}!`);
+        };
+
+        function setPlayerUI() {
+            const authB = document.getElementById('auth-box');
+            const userI = document.getElementById('user-info');
+            if (authB) authB.classList.add('hidden');
+            if (userI) userI.classList.remove('hidden');
+            const disp = document.getElementById('display-user-name');
+            if (disp) disp.innerText = playerName;
+            renderMatches();
         }
 
-        function renderSelects() {
-            gameSelect.innerHTML = ""
-            resultGame.innerHTML = ""
-            games.forEach(g => {
-                let opt = document.createElement("option")
-                opt.value = g.id
-                opt.innerText = `${g.a} x ${g.b}`
-                gameSelect.appendChild(opt)
+        function renderMatches() {
+            if (!matchesList) return;
+            if (matches.length === 0) {
+                matchesList.innerHTML = `
+                    <div class="col-span-full bg-white p-12 rounded-2xl shadow-sm text-center border-2 border-dashed border-gray-200">
+                        <i class="fas fa-calendar-times text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-xl font-bold text-gray-500">Nenhum jogo cadastrado!</p>
+                        <p class="text-gray-400">O administrador ainda não adicionou partidas.</p>
+                        ${isAdmin ? '<button onclick="openMatchModal()" class="mt-4 bg-piaui-green text-white px-6 py-2 rounded-lg font-bold">Adicionar agora</button>' : ''}
+                    </div>
+                `;
+                return;
+            }
 
-                let opt2 = document.createElement("option")
-                opt2.value = g.id
-                opt2.innerText = `${g.a} x ${g.b}`
-                resultGame.appendChild(opt2)
-            })
+            matchesList.innerHTML = matches.map(match => {
+                const userBet = userGuesses.find(g => g.matchId === match.id && g.userName === playerName);
+                const isFinished = match.status === 'finished';
+                const statusBadge = isFinished 
+                    ? `<span class="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs font-bold uppercase">Encerrado</span>`
+                    : `<span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-bold uppercase">Aberto</span>`;
+
+                return `
+                    <div class="card-match bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                        <div class="bg-gray-50 px-4 py-2 border-b flex justify-between items-center">
+                            <span class="text-xs font-bold text-gray-400">CAMPEONATO PIAUIENSE</span>
+                            ${statusBadge}
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center justify-between space-x-2">
+                                <div class="text-center flex-1">
+                                    <div class="w-12 h-12 bg-gray-100 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-piaui-green">${match.homeTeam.substring(0,3).toUpperCase()}</div>
+                                    <p class="text-sm font-bold truncate">${match.homeTeam}</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <div class="text-2xl font-black text-gray-800">
+                                        ${isFinished ? `${match.homeScore} - ${match.awayScore}` : 'vs'}
+                                    </div>
+                                    <div class="text-[10px] text-gray-400 font-bold mt-1 uppercase">${isFinished ? 'Resultado' : 'Em breve'}</div>
+                                </div>
+                                <div class="text-center flex-1">
+                                    <div class="w-12 h-12 bg-gray-100 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-piaui-blue">${match.awayTeam.substring(0,3).toUpperCase()}</div>
+                                    <p class="text-sm font-bold truncate">${match.awayTeam}</p>
+                                </div>
+                            </div>
+                            <div class="mt-6 pt-6 border-t border-dashed">
+                                ${userBet ? `
+                                    <div class="bg-gray-50 rounded-xl p-3 flex justify-between items-center">
+                                        <div>
+                                            <p class="text-[10px] font-bold text-gray-400 uppercase">Seu Palpite</p>
+                                            <p class="text-lg font-black text-piaui-green">${userBet.homeBet} x ${userBet.awayBet}</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-[10px] font-bold text-gray-400 uppercase">Pontos</p>
+                                            <p class="text-lg font-black ${userBet.points > 0 ? 'text-blue-600' : 'text-gray-400'}">${isFinished ? userBet.points : '--'}</p>
+                                        </div>
+                                    </div>
+                                ` : `
+                                    <button onclick="openBetModal('${match.id}')" ${isFinished ? 'disabled' : ''} class="w-full py-3 rounded-xl font-bold transition ${isFinished ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-piaui-yellow text-piaui-green hover:shadow-lg'}">
+                                        ${isFinished ? 'Palpites Encerrados' : 'Dar meu Palpite'}
+                                    </button>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        function addGuess() {
-            let gid = gameSelect.value
-            let name = playerName.value
-            let a = golsA.value
-            let b = golsB.value
-            if (!gid || !name) return
-            guesses.push({
-                gid,
-                name,
-                a,
-                b
-            })
-            playerName.value = ""
-            golsA.value = ""
-            golsB.value = ""
+        function calculateRanking() {
+            const userTotals = {};
+            userGuesses.forEach(guess => {
+                if (!userTotals[guess.userName]) {
+                    userTotals[guess.userName] = { name: guess.userName, points: 0, count: 0 };
+                }
+                userTotals[guess.userName].points += (guess.points || 0);
+                userTotals[guess.userName].count += 1;
+            });
+
+            const sortedRanking = Object.values(userTotals).sort((a, b) => b.points - a.points || b.count - a.count);
+
+            const rTable = document.getElementById('ranking-table-body');
+            if (rTable) {
+                rTable.innerHTML = sortedRanking.map((user, index) => `
+                    <tr class="${user.name === playerName ? 'bg-green-50' : ''} border-b">
+                        <td class="px-6 py-4 font-bold text-gray-600">${index + 1}º</td>
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-gray-800">${user.name} ${user.name === playerName ? '<span class="ml-2 text-[10px] bg-green-200 text-green-700 px-2 py-0.5 rounded-full">VOCÊ</span>' : ''}</div>
+                        </td>
+                        <td class="px-6 py-4 text-center text-gray-500">${user.count}</td>
+                        <td class="px-6 py-4 text-right font-black text-piaui-green text-lg">${user.points}</td>
+                    </tr>
+                `).join('');
+            }
         }
 
-        function saveResult() {
-            let gid = resultGame.value
-            let a = realA.value
-            let b = realB.value
-            results.push({
-                gid,
-                a,
-                b
-            })
-            calcScores()
+        window.switchView = (view) => {
+            document.querySelectorAll('.view-content').forEach(v => v.classList.add('hidden'));
+            const target = document.getElementById(`view-${view}`);
+            if (target) target.classList.remove('hidden');
+            if (window.innerWidth < 768) toggleMenu();
+        };
+
+        window.toggleMenu = () => {
+            const mm = document.getElementById('mobile-menu');
+            if (mm) mm.classList.toggle('hidden');
+        };
+
+        window.showToast = (msg) => {
+            const toast = document.getElementById('toast');
+            const tMsg = document.getElementById('toast-msg');
+            if (toast && tMsg) {
+                tMsg.innerText = msg;
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('hidden'), 3000);
+            }
+        };
+
+        window.closeModal = (id) => {
+            const m = document.getElementById(id);
+            if (m) m.classList.remove('active');
+        };
+
+        window.openBetModal = (matchId) => {
+            if (!playerName) return showToast("Por favor, identifique-se primeiro!");
+            activeMatchId = matchId;
+            const match = matches.find(m => m.id === matchId);
+            if (!match) return;
+            document.getElementById('modal-bet-title').innerText = "Seu Palpite";
+            document.getElementById('home-team-name').innerText = match.homeTeam;
+            document.getElementById('away-team-name').innerText = match.awayTeam;
+            document.getElementById('bet-home').value = 0;
+            document.getElementById('bet-away').value = 0;
+            const mb = document.getElementById('modal-bet');
+            if (mb) mb.classList.add('active');
+        };
+
+        window.saveBet = async () => {
+            if (!currentUser || !activeMatchId) return;
+            try {
+                const betData = {
+                    userName: playerName,
+                    matchId: activeMatchId,
+                    homeBet: parseInt(document.getElementById('bet-home').value),
+                    awayBet: parseInt(document.getElementById('bet-away').value),
+                    points: 0,
+                    timestamp: new Date().getTime()
+                };
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'guesses'), betData);
+                closeModal('modal-bet');
+                showToast("Palpite registrado!");
+            } catch (err) { showToast("Erro de permissão ou rede."); }
+        };
+
+        window.toggleAdminLogin = () => {
+            if (isAdmin) switchView('admin');
+            else {
+                const mal = document.getElementById('modal-admin-login');
+                if (mal) mal.classList.add('active');
+            }
+        };
+
+        window.loginAdmin = () => {
+            const ap = document.getElementById('admin-pass');
+            if (ap && ap.value === "piaui2024") {
+                isAdmin = true;
+                closeModal('modal-admin-login');
+                switchView('admin');
+                renderMatches();
+                showToast("Painel Admin ativado.");
+            } else showToast("Senha inválida!");
+        };
+
+        window.logoutAdmin = () => { isAdmin = false; switchView('home'); };
+
+        window.renderAdminMatches = () => {
+            const list = document.getElementById('admin-matches-list');
+            if (!list) return;
+            list.innerHTML = matches.map(match => `
+                <div class="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center border hover:border-blue-400 cursor-pointer" onclick="openMatchModal('${match.id}')">
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-gray-100 p-2 rounded text-xs font-bold">${match.status === 'finished' ? 'FINALIZADO' : 'ABERTO'}</div>
+                        <div class="font-bold">${match.homeTeam} ${match.homeScore} x ${match.awayScore} ${match.awayTeam}</div>
+                    </div>
+                    <i class="fas fa-edit text-gray-400"></i>
+                </div>
+            `).join('');
+        };
+
+        window.openMatchModal = (matchId = null) => {
+            activeMatchId = matchId;
+            const btnDel = document.getElementById('btn-delete-match');
+            if (matchId) {
+                const match = matches.find(m => m.id === matchId);
+                if (!match) return;
+                document.getElementById('match-admin-title').innerText = "Editar Jogo";
+                document.getElementById('admin-home-team').value = match.homeTeam;
+                document.getElementById('admin-away-team').value = match.awayTeam;
+                document.getElementById('admin-home-score').value = match.homeScore;
+                document.getElementById('admin-away-score').value = match.awayScore;
+                document.getElementById('admin-is-finished').checked = match.status === 'finished';
+                if (btnDel) btnDel.classList.remove('hidden');
+            } else {
+                document.getElementById('match-admin-title').innerText = "Novo Jogo";
+                document.getElementById('admin-home-team').value = "";
+                document.getElementById('admin-away-team').value = "";
+                document.getElementById('admin-home-score').value = 0;
+                document.getElementById('admin-away-score').value = 0;
+                document.getElementById('admin-is-finished').checked = false;
+                if (btnDel) btnDel.classList.add('hidden');
+            }
+            const mma = document.getElementById('modal-match-admin');
+            if (mma) mma.classList.add('active');
+        };
+
+        window.saveMatchAdmin = async () => {
+            if (!db) return;
+            const data = {
+                homeTeam: document.getElementById('admin-home-team').value,
+                awayTeam: document.getElementById('admin-away-team').value,
+                homeScore: parseInt(document.getElementById('admin-home-score').value),
+                awayScore: parseInt(document.getElementById('admin-away-score').value),
+                status: document.getElementById('admin-is-finished').checked ? 'finished' : 'open'
+            };
+            try {
+                if (activeMatchId) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'matches', activeMatchId), data);
+                    if (data.status === 'finished') await processPoints(activeMatchId, data.homeScore, data.awayScore);
+                } else {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'matches'), data);
+                }
+                closeModal('modal-match-admin');
+                showToast("Dados atualizados.");
+            } catch (err) { showToast("Erro ao salvar."); }
+        };
+
+        async function processPoints(matchId, realHome, realAway) {
+            if (!db) return;
+            const matchGuesses = userGuesses.filter(g => g.matchId === matchId);
+            const winner = realHome > realAway ? 'home' : (realHome < realAway ? 'away' : 'draw');
+            for (const guess of matchGuesses) {
+                let pts = 0;
+                const guessWinner = guess.homeBet > guess.awayBet ? 'home' : (guess.homeBet < guess.awayBet ? 'away' : 'draw');
+                if (guessWinner === winner) pts = winner === 'draw' ? 1 : 3;
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', guess.id), { points: pts });
+            }
         }
 
-        function calcScores() {
-            scores = {}
-            guesses.forEach(g => {
-                let r = results.find(x => x.gid == g.gid)
-                if (!r) return
+        window.deleteMatchAdmin = async () => {
+            if (!db || !activeMatchId || !confirm("Excluir jogo?")) return;
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'matches', activeMatchId));
+                closeModal('modal-match-admin');
+                showToast("Excluído.");
+            } catch (err) { showToast("Erro."); }
+        };
 
-                let p = 0
-                let gDiff = g.a - g.b
-                let rDiff = r.a - r.b
+        window.exportRankingPDF = () => window.print();
 
-                if (gDiff > 0 && rDiff > 0) p = 3
-                else if (gDiff < 0 && rDiff < 0) p = 3
-                else if (gDiff == 0 && rDiff == 0) p = 1
-                else p = 0
-
-                if (!scores[g.name]) scores[g.name] = 0
-                scores[g.name] += p
-            })
-
-            renderRanking()
-        }
-
-        function renderRanking() {
-            let html = "<table><tr><th>Participante</th><th>Pontos</th></tr>"
-            Object.keys(scores).forEach(n => {
-                html += `<tr><td>${n}</td><td>${scores[n]}</td></tr>`
-            })
-            html += "</table>"
-            ranking.innerHTML = html
-        }
     </script>
-
 </body>
 
 </html>
