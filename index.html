@@ -99,11 +99,18 @@
                 display: block !important;
             }
 
-            /* CORREÇÃO: box-shadow em vez de shadow */
             .shadow-xl {
                 box-shadow: none !important;
                 border: 1px solid #ddd;
             }
+        }
+
+        /* Garantir que o botão do menu seja clicável em mobile */
+        .mobile-menu-btn {
+            cursor: pointer;
+            z-index: 50;
+            padding: 10px;
+            margin: -10px;
         }
     </style>
 </head>
@@ -111,7 +118,7 @@
 <body class="pb-12">
 
     <!-- Header -->
-    <header class="bg-piaui-green text-white shadow-lg no-print">
+    <header class="bg-piaui-green text-white shadow-lg no-print sticky top-0 z-50">
         <div class="container mx-auto px-4 py-6 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <div class="bg-white p-2 rounded-full">
@@ -125,7 +132,8 @@
                 <a href="#" onclick="toggleAdminLogin()" class="opacity-50 hover:opacity-100"><i
                         class="fas fa-lock"></i></a>
             </nav>
-            <button class="md:hidden text-2xl" onclick="toggleMenu()">
+            <!-- Botão do Menu Mobile -->
+            <button class="md:hidden text-2xl mobile-menu-btn" onclick="toggleMenu()" aria-label="Abrir Menu">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
@@ -133,10 +141,10 @@
 
     <!-- Mobile Menu -->
     <div id="mobile-menu"
-        class="hidden bg-piaui-green text-white px-4 py-4 space-y-4 border-t border-green-700 no-print">
-        <a href="#" onclick="switchView('home')" class="block py-2">Início</a>
-        <a href="#" onclick="switchView('ranking')" class="block py-2">Ranking</a>
-        <a href="#" onclick="toggleAdminLogin()" class="block py-2 text-yellow-300">Acesso Admin</a>
+        class="hidden bg-piaui-green text-white px-4 py-4 space-y-4 border-t border-green-700 no-print sticky top-[76px] z-40 shadow-xl">
+        <a href="#" onclick="switchView('home')" class="block py-3 border-b border-green-700 font-bold">Início</a>
+        <a href="#" onclick="switchView('ranking')" class="block py-3 border-b border-green-700 font-bold">Ranking</a>
+        <a href="#" onclick="toggleAdminLogin()" class="block py-3 text-yellow-300 font-bold">Acesso Admin</a>
     </div>
 
     <main class="container mx-auto px-4 mt-8">
@@ -148,9 +156,19 @@
                     <h2 class="text-3xl font-bold text-gray-800">Jogos da Rodada</h2>
                     <p class="text-gray-600">Confira as partidas e seus palpites registrados!</p>
                 </div>
-                <div id="user-info" class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-piaui-blue hidden">
-                    <p class="text-sm text-gray-500">Acessando como:</p>
-                    <p class="font-bold text-piaui-blue" id="display-user-name"></p>
+                <!-- Info do Usuário com botão de Sair -->
+                <div id="user-info"
+                    class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-piaui-blue hidden min-w-[200px]">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Acessando como:</p>
+                            <p class="font-bold text-piaui-blue" id="display-user-name"></p>
+                        </div>
+                        <button onclick="logoutPlayer()"
+                            class="text-xs text-red-500 font-black hover:text-red-700 transition ml-4 bg-red-50 px-3 py-1 rounded-full uppercase">
+                            <i class="fas fa-sign-out-alt mr-1"></i>Sair
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -261,43 +279,44 @@
             <h3 class="text-xl font-bold mb-6 text-center" id="match-admin-title">Configurar Jogo</h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Coluna: Dados do Jogo -->
                 <div class="space-y-4">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-500 mb-1">RODADA</label>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Rodada</label>
                             <input type="text" id="admin-match-round" placeholder="01/07"
                                 class="w-full border rounded px-3 py-2 text-sm">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-500 mb-1">DATA/HORA</label>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Data/Hora</label>
                             <input type="text" id="admin-match-date" placeholder="10/01 16:00"
                                 class="w-full border rounded px-3 py-2 text-sm">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-500 mb-1">ESTÁDIO</label>
+                        <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Estádio</label>
                         <input type="text" id="admin-match-stadium" placeholder="Estádio..."
                             class="w-full border rounded px-3 py-2 text-sm">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-500 mb-1">TIME MANDANTE</label>
+                        <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Time Mandante</label>
                         <input type="text" id="admin-home-team"
                             class="w-full border rounded px-3 py-2 text-sm font-bold">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-500 mb-1">TIME VISITANTE</label>
+                        <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Time Visitante</label>
                         <input type="text" id="admin-away-team"
                             class="w-full border rounded px-3 py-2 text-sm font-bold">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-500 mb-1">PLACAR REAL (CASA)</label>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Placar Real
+                                (Casa)</label>
                             <input type="number" id="admin-home-score"
                                 class="w-full border rounded px-3 py-2 text-lg font-black" value="0">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-500 mb-1">PLACAR REAL (FORA)</label>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Placar Real
+                                (Fora)</label>
                             <input type="number" id="admin-away-score"
                                 class="w-full border rounded px-3 py-2 text-lg font-black" value="0">
                         </div>
@@ -308,7 +327,7 @@
                     </div>
                     <div class="pt-2 flex flex-col space-y-2">
                         <button onclick="saveMatchAdmin()"
-                            class="bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700">Salvar
+                            class="bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700 transition">Salvar
                             Jogo</button>
                         <button onclick="deleteMatchAdmin()" id="btn-delete-match"
                             class="hidden text-red-500 text-xs py-1">Excluir Jogo</button>
@@ -317,14 +336,15 @@
 
                 <!-- Coluna: Importação em Massa -->
                 <div class="border-l pl-0 md:pl-8 space-y-4">
-                    <label class="block text-[10px] font-bold text-gray-500">IMPORTAR PALPITES (COLE AQUI)</label>
-                    <p class="text-[9px] text-gray-400 italic mb-2">Formato esperado: 0X1 Nome do Participante</p>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase">Importar Palpites (Cole
+                        Aqui)</label>
+                    <p class="text-[9px] text-gray-400 italic mb-2">Formato: 0X1 Nome do Participante</p>
                     <textarea id="bulk-bets-input" rows="10"
                         class="w-full border rounded p-3 text-xs font-mono bg-gray-50"
-                        placeholder="0X1 Yan Gabriel&#10;1X3 Hudson&#10;0X1 Diniz Monitoramento"></textarea>
+                        placeholder="0X1 Yan Gabriel&#10;1X3 Hudson"></textarea>
                     <button onclick="processBulkImport()"
-                        class="w-full bg-piaui-green text-white py-2 rounded-lg font-bold text-xs">Adicionar Palpites da
-                        Lista</button>
+                        class="w-full bg-piaui-green text-white py-2 rounded-lg font-bold text-xs hover:bg-opacity-90">Adicionar
+                        à Base</button>
                 </div>
             </div>
             <button onclick="closeModal('modal-match-admin')" class="w-full text-gray-400 text-xs mt-6">Fechar</button>
@@ -382,7 +402,7 @@
                 });
             } catch (err) {
                 console.error("Firebase Error:", err);
-                if (matchesList) matchesList.innerHTML = `<div class='col-span-full text-center py-12 text-red-500'>Erro de conexão: ${err.message}</div>`;
+                if (matchesList) matchesList.innerHTML = `<div class='col-span-full text-center py-12 text-red-500'>Erro de ligação: ${err.message}</div>`;
             }
         }
 
@@ -412,10 +432,23 @@
         // --- RENDERIZAÇÃO ---
         window.setPlayerName = () => {
             const nameInput = document.getElementById('input-player-name').value.trim();
-            if (!nameInput) return showToast("Digite seu nome!");
+            if (!nameInput) return showToast("Digite o seu nome!");
             playerName = nameInput;
             localStorage.setItem('bolao_user_name', playerName);
             setPlayerUI();
+        };
+
+        // NOVO: Função para Deslogar Participante
+        window.logoutPlayer = () => {
+            playerName = "";
+            localStorage.removeItem('bolao_user_name');
+            const ab = document.getElementById('auth-box');
+            const ui = document.getElementById('user-info');
+            if (ab) ab.classList.remove('hidden');
+            if (ui) ui.classList.add('hidden');
+            document.getElementById('input-player-name').value = "";
+            renderMatches();
+            showToast("Sessão encerrada.");
         };
 
         function setPlayerUI() {
@@ -431,14 +464,13 @@
         function renderMatches() {
             if (!matchesList) return;
             if (matches.length === 0) {
-                matchesList.innerHTML = `<div class='col-span-full text-center py-12'>Sem jogos cadastrados.</div>`;
+                matchesList.innerHTML = `<div class='col-span-full text-center py-12'>Sem jogos registados.</div>`;
                 return;
             }
 
             const sorted = [...matches].sort((a, b) => (a.round + a.date).localeCompare(b.round + b.date));
             matchesList.innerHTML = sorted.map(match => {
                 const isFinished = match.status === 'finished';
-                // Mostra todos os palpites para esse jogo se for Admin ou se o usuário for um deles
                 const matchBets = userGuesses.filter(g => g.matchId === match.id);
                 const myBet = matchBets.find(g => g.userName === playerName);
 
@@ -478,9 +510,9 @@
                                         </div>
                                     </div>
                                 ` : `
-                                    <button onclick="openBetModal('${match.id}')" ${isFinished ? 'disabled' : ''} class="w-full py-2 bg-piaui-yellow text-piaui-green font-bold rounded-lg text-sm transition ${isFinished ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}">Dar Palpite</button>
+                                    <button onclick="openBetModal('${match.id}')" ${isFinished ? 'disabled' : ''} class="w-full py-2 bg-piaui-yellow text-piaui-green font-bold rounded-lg text-sm transition ${isFinished ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}">Dar Palpite</button>
                                 `}
-                                <button onclick="toggleDetails('${match.id}')" class="w-full mt-2 text-[10px] text-gray-400 font-bold hover:text-piaui-green">Ver todos os palpites (${matchBets.length})</button>
+                                <button onclick="toggleDetails('${match.id}')" class="w-full mt-2 text-[10px] text-gray-400 font-bold hover:text-piaui-green uppercase tracking-wide">Ver palpites (${matchBets.length})</button>
                                 <div id="details-${match.id}" class="hidden mt-4 space-y-1 max-h-32 overflow-y-auto">
                                     ${matchBets.map(b => `<div class="flex justify-between text-[10px] border-b pb-1"><span class="truncate pr-2">${b.userName}</span><span class="font-bold">${b.homeBet}x${b.awayBet}</span></div>`).join('')}
                                 </div>
@@ -506,29 +538,28 @@
                 <tr class="${u.name === playerName ? 'bg-green-50' : ''} border-b hover:bg-gray-50 transition">
                     <td class="px-6 py-4 font-bold text-gray-600">${i + 1}º</td>
                     <td class="px-6 py-4 font-bold text-gray-800">${u.name}</td>
-                    <td class="px-6 py-4 text-center text-gray-400">${u.count}</td>
+                    <td class="px-6 py-4 text-center text-gray-400 font-medium">${u.count}</td>
                     <td class="px-6 py-4 text-right font-black text-piaui-green text-xl">${u.points}</td>
                 </tr>
             `).join('');
         }
 
-        // --- IMPORTAÇÃO EM MASSA (O DIFERENCIAL) ---
+        // --- IMPORTAÇÃO EM MASSA ---
         window.processBulkImport = async () => {
             if (!activeMatchId) return showToast("Salve o jogo primeiro!");
             const input = document.getElementById('bulk-bets-input').value;
             const lines = input.split('\n');
             let count = 0;
 
-            showToast("Processando lista...");
+            showToast("Processando...");
             const batch = writeBatch(db);
 
             lines.forEach(line => {
-                // Regex para capturar: {golsXgols} {nome}
-                const match = line.match(/(\d+)\s*X\s*(\d+)\s+(.+)/i);
-                if (match) {
-                    const homeBet = parseInt(match[1]);
-                    const awayBet = parseInt(match[2]);
-                    const name = match[3].trim();
+                const matchResult = line.match(/(\d+)\s*X\s*(\d+)\s+(.+)/i);
+                if (matchResult) {
+                    const homeBet = parseInt(matchResult[1]);
+                    const awayBet = parseInt(matchResult[2]);
+                    const name = matchResult[3].trim();
 
                     if (name && !isNaN(homeBet) && !isNaN(awayBet)) {
                         const betRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'guesses'));
@@ -580,13 +611,12 @@
                 
                 if (isFinished) await processPoints(mId, data.homeScore, data.awayScore);
                 
-                showToast("Jogo salvo!");
-                if (!isFinished) renderAdminMatches(); // Só atualiza lista se não fechou o modal
-            } catch (err) { showToast("Erro ao salvar."); }
+                showToast("Jogo guardado com sucesso!");
+                if (!isFinished) renderAdminMatches();
+            } catch (err) { showToast("Erro ao guardar."); }
         };
 
         async function processPoints(matchId, realH, realA) {
-            // REGRA: 3 pontos se venceu, 1 ponto se empatou, 0 se perdeu.
             const realResult = realH > realA ? 'home' : (realH < realA ? 'away' : 'draw');
             const bets = userGuesses.filter(g => g.matchId === matchId);
             
@@ -602,11 +632,20 @@
             await batch.commit();
         }
 
-        // --- AUXILIARES ---
+        // --- AUXILIARES E MENUS ---
+        window.toggleMenu = () => {
+            const menu = document.getElementById('mobile-menu');
+            if (menu) menu.classList.toggle('hidden');
+        };
+
         window.switchView = (v) => {
             document.querySelectorAll('.view-content').forEach(s => s.classList.add('hidden'));
-            document.getElementById(`view-${v}`).classList.remove('hidden');
+            const target = document.getElementById(`view-${v}`);
+            if (target) target.classList.remove('hidden');
+            const menu = document.getElementById('mobile-menu');
+            if (menu) menu.classList.add('hidden');
         };
+
         window.closeModal = (id) => document.getElementById(id).classList.remove('active');
         window.showToast = (m) => {
             const t = document.getElementById('toast');
@@ -617,7 +656,9 @@
         window.openMatchModal = (id = null) => {
             activeMatchId = id;
             const match = matches.find(m => m.id === id);
-            document.getElementById('btn-delete-match').style.display = id ? 'block' : 'none';
+            const delBtn = document.getElementById('btn-delete-match');
+            if (delBtn) delBtn.style.display = id ? 'block' : 'none';
+            
             document.getElementById('admin-match-round').value = match?.round || "";
             document.getElementById('admin-match-date').value = match?.date || "";
             document.getElementById('admin-match-stadium').value = match?.stadium || "";
@@ -636,7 +677,15 @@
         };
         window.renderAdminMatches = () => {
             const l = document.getElementById('admin-matches-list');
-            if (l) l.innerHTML = matches.map(m => `<div onclick="openMatchModal('${m.id}')" class="bg-white p-4 rounded-xl border cursor-pointer hover:bg-gray-50 flex justify-between"><div><span class="text-[10px] font-bold text-gray-400">R${m.round}</span> <span class="font-bold">${m.homeTeam} x ${m.awayTeam}</span></div><i class="fas fa-edit text-gray-300"></i></div>`).join('');
+            if (l) l.innerHTML = matches.map(m => `
+                <div onclick="openMatchModal('${m.id}')" class="bg-white p-4 rounded-xl border cursor-pointer hover:bg-gray-50 flex justify-between items-center transition">
+                    <div>
+                        <span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded">RODADA ${m.round}</span> 
+                        <div class="font-bold mt-1">${m.homeTeam} x ${m.awayTeam}</div>
+                    </div>
+                    <i class="fas fa-edit text-gray-300"></i>
+                </div>
+            `).join('');
         };
         window.openBetModal = (id) => {
             if (!playerName) return showToast("Identifique-se primeiro!");
@@ -650,7 +699,12 @@
             const hb = parseInt(document.getElementById('bet-home').value);
             const ab = parseInt(document.getElementById('bet-away').value);
             await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'guesses'), { matchId: activeMatchId, userName: playerName, homeBet: hb, awayBet: ab, points: 0, timestamp: Date.now() });
-            closeModal('modal-bet'); showToast("Palpite salvo!");
+            closeModal('modal-bet'); showToast("Palpite guardado!");
+        };
+        window.deleteMatchAdmin = async () => {
+            if (!activeMatchId || !confirm("Eliminar este jogo?")) return;
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'matches', activeMatchId));
+            closeModal('modal-match-admin');
         };
         window.exportRankingPDF = () => window.print();
 
