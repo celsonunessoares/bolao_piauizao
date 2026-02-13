@@ -177,7 +177,7 @@
                 <div>
                     <h2 class="text-xl md:text-2xl font-black text-gray-800 uppercase tracking-tighter">Jogos da Rodada
                     </h2>
-                    <p class="text-xs text-gray-500 font-medium">Confira as partidas e palpites registrados!</p>
+                    <p class="text-xs text-gray-500 font-medium">Confira as partidas e registre seus palpites!</p>
                 </div>
                 <div id="user-info"
                     class="bg-white p-3 rounded-xl shadow-sm border-l-4 border-piaui-blue hidden min-w-[200px]">
@@ -192,28 +192,28 @@
                 </div>
             </div>
 
-            <!-- Banner de Regras -->
+            <!-- Banner de Regras Atualizadas -->
             <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6 shadow-sm">
                 <div class="flex items-start space-x-3">
                     <div class="text-piaui-blue mt-0.5"><i class="fas fa-info-circle"></i></div>
                     <div>
                         <h4 class="text-[10px] font-black text-piaui-blue uppercase tracking-widest mb-2">Regras de
-                            Pontuação (Placar Exato)</h4>
+                            Pontuação (Resultado da Partida)</h4>
                         <div class="flex flex-wrap gap-x-6 gap-y-2">
                             <div class="flex items-center text-[11px] text-blue-900 font-bold">
                                 <span
                                     class="bg-piaui-green text-white w-4 h-4 rounded-md flex items-center justify-center mr-2 text-[9px]">3</span>
-                                <span>3 pontos: Acertou Placar (Vitória)</span>
+                                <span>3 pontos: Acertou o Vencedor</span>
                             </div>
                             <div class="flex items-center text-[11px] text-blue-900 font-bold">
                                 <span
                                     class="bg-blue-600 text-white w-4 h-4 rounded-md flex items-center justify-center mr-2 text-[9px]">1</span>
-                                <span>1 ponto: Acertou Placar (Empate)</span>
+                                <span>1 ponto: Acertou o Empate</span>
                             </div>
                             <div class="flex items-center text-[11px] text-blue-900 font-bold opacity-70">
                                 <span
                                     class="bg-gray-400 text-white w-4 h-4 rounded-md flex items-center justify-center mr-2 text-[9px]">0</span>
-                                <span>0 ponto: Errou o Placar</span>
+                                <span>0 ponto: Errou o resultado</span>
                             </div>
                         </div>
                     </div>
@@ -223,9 +223,9 @@
             <div id="auth-box"
                 class="bg-white p-5 rounded-2xl shadow-sm mb-6 max-w-md mx-auto no-print border border-gray-100">
                 <h3 class="text-sm font-bold mb-3 text-center text-gray-700 uppercase tracking-tight">Identifique-se
-                    para palpar</h3>
+                    para palpitar</h3>
                 <div class="flex space-x-2">
-                    <input type="text" id="input-player-name" placeholder="Nome Completo"
+                    <input type="text" id="input-player-name" placeholder="Seu Nome"
                         class="flex-1 border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none text-xs transition-all uppercase font-medium">
                     <button onclick="setPlayerName()"
                         class="bg-piaui-green text-white px-5 py-2 rounded-lg font-bold hover:bg-opacity-90 transition active:scale-95 shadow-sm uppercase text-[10px]">Entrar</button>
@@ -247,7 +247,7 @@
                 </h2>
                 <button onclick="exportRankingPDF()"
                     class="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 no-print transition shadow-md font-bold text-[10px] uppercase tracking-widest">
-                    <i class="fas fa-file-pdf mr-1"></i>PDF
+                    <i class="fas fa-file-pdf mr-1"></i>PDF / IMPRIMIR
                 </button>
             </div>
 
@@ -340,7 +340,7 @@
         </div>
     </div>
 
-    <!-- Modal: Cadastro de Jogo / Importação -->
+    <!-- Modal: Configuração de Jogo (Admin) -->
     <div id="modal-match-admin" class="modal no-print">
         <div
             class="bg-white rounded-2xl p-6 max-w-4xl w-full mx-4 shadow-2xl overflow-y-auto max-h-[90vh] border border-gray-200">
@@ -416,7 +416,7 @@
                 </div>
                 <div class="lg:border-l lg:pl-8 space-y-3">
                     <label class="block text-[10px] font-black text-piaui-green uppercase tracking-widest">Importar
-                        Lista de Palpites</label>
+                        Lista (2x1 Nome)</label>
                     <textarea id="bulk-bets-input" rows="12"
                         class="w-full border border-gray-200 rounded-xl p-4 text-[11px] font-mono bg-gray-50 focus:bg-white outline-none transition-all shadow-inner"
                         placeholder="0X1 Yan Gabriel&#10;1X3 Hudson"></textarea>
@@ -435,14 +435,10 @@
         <div class="bg-white rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl border border-gray-100">
             <h3 class="text-xl font-black mb-4 text-center text-piaui-blue uppercase tracking-tight">Gerenciar
                 Participantes</h3>
-            <p class="text-[10px] text-gray-400 text-center mb-6 uppercase font-bold">Edite ou exclua participantes da
-                rodada</p>
-
             <div id="participants-list"
                 class="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar border-y py-4 border-gray-100">
                 <div class="text-center text-gray-300 text-[10px] py-10 uppercase italic">Carregando lista...</div>
             </div>
-
             <button onclick="closeModal('modal-participants')"
                 class="w-full mt-6 text-gray-400 font-bold py-2 uppercase text-[10px] hover:text-gray-600 transition tracking-widest">Fechar</button>
         </div>
@@ -518,13 +514,22 @@
                 userGuesses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderMatches();
                 calculateRanking();
-                if (document.getElementById('modal-participants').classList.contains('active')) {
-                    renderParticipantsList();
-                }
+                if (document.getElementById('modal-participants').classList.contains('active')) renderParticipantsList();
             }));
         }
 
-        // --- CORE UI ---
+        // --- LÓGICA DE PONTUAÇÃO (NOVA REGRA) ---
+        // 3 pts se acertar o vencedor. 1 pt se acertar o empate.
+        function calculatePointsLogic(guessH, guessA, realH, realA) {
+            const guessResult = guessH > guessA ? 'home' : (guessA > guessH ? 'away' : 'draw');
+            const realResult = realH > realA ? 'home' : (realA > realH ? 'away' : 'draw');
+
+            if (guessResult === realResult) {
+                return (realResult === 'draw') ? 1 : 3;
+            }
+            return 0;
+        }
+
         window.setPlayerName = () => {
             let nameInput = document.getElementById('input-player-name').value.trim();
             if (!nameInput) return showToast("Digite seu nome!");
@@ -550,24 +555,14 @@
         function renderMatches() {
             if (!matchesList) return;
             if (matches.length === 0) {
-                matchesList.innerHTML = `<div class='col-span-full text-center py-16 text-gray-400 font-bold uppercase text-[10px] tracking-widest italic'>Aguardando jogos...</div>`;
+                matchesList.innerHTML = `<div class='col-span-full text-center py-16 text-gray-400 font-bold uppercase text-[10px] tracking-widest italic opacity-50'>Nenhum jogo cadastrado.</div>`;
                 return;
             }
 
-            // NOVA LÓGICA DE ORDENAÇÃO: Abertos primeiro, depois encerrados
             const sorted = [...matches].sort((a, b) => {
-                // Prioriza status "open"
                 if (a.status === 'open' && b.status === 'finished') return -1;
                 if (a.status === 'finished' && b.status === 'open') return 1;
-
-                // Se ambos tiverem o mesmo status, ordena por rodada/data
-                if (a.status === 'open') {
-                    // Para abertos, os mais próximos primeiro (crescente)
-                    return (a.round + a.date).localeCompare(b.round + b.date);
-                } else {
-                    // Para encerrados, os mais recentes primeiro (decrescente)
-                    return (b.round + b.date).localeCompare(a.round + a.date);
-                }
+                return (a.round + a.date).localeCompare(b.round + b.date);
             });
 
             matchesList.innerHTML = sorted.map(match => {
@@ -658,7 +653,7 @@
             const rt = document.getElementById('ranking-table-body');
             if (rt) {
                 if (sorted.length === 0) {
-                    rt.innerHTML = `<tr><td colspan='4' class='text-center py-16 text-gray-300 font-black uppercase text-[10px] tracking-widest italic opacity-50'>Aguardando resultados...</td></tr>`;
+                    rt.innerHTML = `<tr><td colspan='4' class='text-center py-16 text-gray-300 font-black uppercase text-[10px] tracking-widest italic opacity-50'>Sem registros de pontuação.</td></tr>`;
                 } else {
                     rt.innerHTML = sorted.map((u, i) => `
                         <tr class="${u.name === playerName ? 'bg-green-50 border-l-4 border-l-piaui-green' : ''} border-b border-gray-50">
@@ -677,7 +672,7 @@
             }
         }
 
-        // --- ADMIN: PARTICIPANTS MANAGEMENT ---
+        // --- ADMIN: PARTICIPANTS ---
         window.openParticipantsManager = () => {
             document.getElementById('modal-participants').classList.add('active');
             renderParticipantsList();
@@ -686,14 +681,11 @@
         function renderParticipantsList() {
             const container = document.getElementById('participants-list');
             if (!container) return;
-
             const uniqueNames = [...new Set(userGuesses.map(g => (g.userName || 'ANÔNIMO').trim().toUpperCase()))].sort();
-
             if (uniqueNames.length === 0) {
                 container.innerHTML = `<div class="text-center text-gray-300 text-[10px] py-10 uppercase italic">Nenhum palpite registrado.</div>`;
                 return;
             }
-
             container.innerHTML = uniqueNames.map((name, index) => `
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200 group hover:border-piaui-blue transition-colors">
                     <div class="flex-1 mr-4">
@@ -701,14 +693,10 @@
                                class="w-full bg-white border border-gray-100 rounded px-2 py-1 font-black text-xs text-gray-700 uppercase focus:ring-1 focus:ring-piaui-blue outline-none transition-all">
                     </div>
                     <div class="flex items-center space-x-2">
-                        <button onclick="saveNewParticipantName('${name}', ${index})" 
-                                title="Salvar Alteração"
-                                class="bg-piaui-green text-white p-2 rounded-lg hover:scale-105 transition active:scale-95 shadow-sm">
+                        <button onclick="saveNewParticipantName('${name}', ${index})" class="bg-piaui-green text-white p-2 rounded-lg hover:scale-105 transition active:scale-95 shadow-sm">
                             <i class="fas fa-save text-[10px]"></i>
                         </button>
-                        <button onclick="deleteParticipant('${name}')" 
-                                title="Excluir Participante"
-                                class="bg-red-500 text-white p-2 rounded-lg hover:scale-105 transition active:scale-95 shadow-sm">
+                        <button onclick="deleteParticipant('${name}')" class="bg-red-500 text-white p-2 rounded-lg hover:scale-105 transition active:scale-95 shadow-sm">
                             <i class="fas fa-trash-alt text-[10px]"></i>
                         </button>
                     </div>
@@ -717,68 +705,38 @@
         }
 
         window.saveNewParticipantName = async (oldName, index) => {
-            const input = document.getElementById(`edit-name-input-${index}`);
-            const newName = input.value.trim().toUpperCase();
-
-            if (!newName || newName === oldName) {
-                return showToast("Nome inválido ou sem alteração");
-            }
-
-            if (!confirm(`Confirmar alteração de "${oldName}" para "${newName}"?`)) return;
-
+            const newName = document.getElementById(`edit-name-input-${index}`).value.trim().toUpperCase();
+            if (!newName || newName === oldName) return showToast("Sem alterações");
+            if (!confirm(`Mudar de "${oldName}" para "${newName}"?`)) return;
             try {
                 const betsToUpdate = userGuesses.filter(g => (g.userName || '').toUpperCase() === oldName);
-                if (betsToUpdate.length === 0) return showToast("Nenhum palpite encontrado");
-
                 const batch = writeBatch(db);
                 betsToUpdate.forEach(bet => {
-                    const betRef = doc(db, 'artifacts', appId, 'public', 'data', 'guesses', bet.id);
-                    batch.update(betRef, { userName: newName });
+                    batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', bet.id), { userName: newName });
                 });
-
                 await batch.commit();
-                showToast("Nome atualizado!");
-                
-                if (oldName === playerName) {
-                    playerName = newName;
-                    localStorage.setItem('bolao_user_name', playerName);
-                    setPlayerUI();
-                }
+                showToast("Sucesso!");
+                if (oldName === playerName) { playerName = newName; localStorage.setItem('bolao_user_name', playerName); setPlayerUI(); }
                 renderParticipantsList();
-            } catch (err) {
-                console.error(err);
-                showToast("Erro ao salvar.");
-            }
+            } catch (err) { showToast("Erro."); }
         };
 
         window.deleteParticipant = async (name) => {
-            if (!confirm(`ATENÇÃO: Isso excluirá permanentemente todos os palpites de "${name}". Continuar?`)) return;
-
+            if (!confirm(`Remover TODOS os palpites de "${name}"?`)) return;
             try {
                 const betsToDelete = userGuesses.filter(g => (g.userName || '').toUpperCase() === name);
-                if (betsToDelete.length === 0) return showToast("Nenhum palpite para excluir");
-
                 const batch = writeBatch(db);
-                betsToDelete.forEach(bet => {
-                    const betRef = doc(db, 'artifacts', appId, 'public', 'data', 'guesses', bet.id);
-                    batch.delete(betRef);
-                });
-
+                betsToDelete.forEach(bet => batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', bet.id)));
                 await batch.commit();
-                showToast(`Participante "${name}" removido.`);
-                
+                showToast("Removido.");
                 if (name === playerName) logoutPlayer();
                 renderParticipantsList();
-            } catch (err) {
-                console.error(err);
-                showToast("Erro ao excluir.");
-            }
+            } catch (err) { showToast("Erro."); }
         };
 
-        // --- ADMIN: LOGIC & BULK ---
-        
+        // --- ADMIN: LOGIC (RECALCULAR PONTOS COM A NOVA REGRA) ---
         window.recalculateAllPoints = async () => {
-            if (!confirm("Isso irá recalcular a pontuação de TODOS os palpites baseando-se nos placares atuais dos jogos encerrados. Continuar?")) return;
+            if (!confirm("Isso aplicará as novas regras (3pts vitória, 1pt empate) a TODOS os palpites existentes. Continuar?")) return;
             
             showToast("Recalculando...");
             const finishedMatches = matches.filter(m => m.status === 'finished');
@@ -788,10 +746,7 @@
             userGuesses.forEach(bet => {
                 const match = finishedMatches.find(m => m.id === bet.matchId);
                 if (match) {
-                    let pts = 0;
-                    if (Number(bet.homeBet) === Number(match.homeScore) && Number(bet.awayBet) === Number(match.awayScore)) {
-                        pts = (Number(match.homeScore) === Number(match.awayScore)) ? 1 : 3;
-                    }
+                    const pts = calculatePointsLogic(Number(bet.homeBet), Number(bet.awayBet), Number(match.homeScore), Number(match.awayScore));
                     if (Number(bet.points) !== pts) {
                         batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', bet.id), { points: Number(pts) });
                         count++;
@@ -799,23 +754,18 @@
                 }
             });
 
-            if (count > 0) {
-                await batch.commit();
-                showToast(`${count} palpites atualizados!`);
-            } else {
-                showToast("Tudo já está sincronizado.");
-            }
+            if (count > 0) { await batch.commit(); showToast(`${count} palpites atualizados!`); } 
+            else showToast("Tudo sincronizado.");
         };
 
         window.processBulkImport = async () => {
-            if (!activeMatchId) return showToast("Grave o jogo primeiro!");
+            if (!activeMatchId) return showToast("Selecione um jogo!");
             const input = document.getElementById('bulk-bets-input').value;
             const lines = input.split('\n');
             let count = 0;
             const batch = writeBatch(db);
-
             const match = matches.find(m => m.id === activeMatchId);
-            const isFinished = match?.status === 'finished';
+            const isFin = match?.status === 'finished';
             
             lines.forEach(line => {
                 const res = line.match(/(\d+)\s*[xX]\s*(\d+)\s+(.+)/i);
@@ -823,13 +773,7 @@
                     const hB = parseInt(res[1]);
                     const aB = parseInt(res[2]);
                     const name = res[3].trim().toUpperCase();
-                    
-                    let pts = 0;
-                    if (isFinished) {
-                        if (hB === Number(match.homeScore) && aB === Number(match.awayScore)) {
-                            pts = (hB === aB) ? 1 : 3;
-                        }
-                    }
+                    let pts = isFin ? calculatePointsLogic(hB, aB, Number(match.homeScore), Number(match.awayScore)) : 0;
 
                     const betRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'guesses'));
                     batch.set(betRef, { matchId: activeMatchId, userName: name, homeBet: hB, awayBet: aB, points: pts, timestamp: Date.now() });
@@ -837,11 +781,8 @@
                 }
             });
 
-            if (count > 0) {
-                await batch.commit();
-                showToast(`${count} palpites importados!`);
-                document.getElementById('bulk-bets-input').value = "";
-            } else showToast("Formato: 2x1 Nome");
+            if (count > 0) { await batch.commit(); showToast(`${count} palpites importados!`); document.getElementById('bulk-bets-input').value = ""; } 
+            else showToast("Use o formato: 2x1 Nome");
         };
 
         window.saveMatchAdmin = async () => {
@@ -866,30 +807,23 @@
                     activeMatchId = mId;
                 }
                 if (isFin) await processPoints(mId, hS, aS);
-                
-                showToast("Sucesso!");
+                showToast("Salvo!");
                 renderAdminMatches();
                 if (isFin) closeModal('modal-match-admin');
-            } catch (err) { showToast("Erro no servidor."); }
+            } catch (err) { showToast("Erro."); }
         };
 
         async function processPoints(matchId, realH, realA) {
             const bets = userGuesses.filter(g => g.matchId === matchId);
             const batch = writeBatch(db);
-            
             bets.forEach(b => {
-                let pts = 0;
-                if (Number(b.homeBet) === Number(realH) && Number(b.awayBet) === Number(realA)) {
-                    pts = (realH === realA) ? 1 : 3;
-                } else {
-                    pts = 0;
-                }
+                const pts = calculatePointsLogic(Number(b.homeBet), Number(b.awayBet), Number(realH), Number(realA));
                 batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', b.id), { points: Number(pts) });
             });
             if (bets.length > 0) await batch.commit();
         }
 
-        // --- AUX ---
+        // --- AUXILIARES UI ---
         window.toggleMenu = () => document.getElementById('mobile-menu').classList.toggle('hidden');
         window.switchView = (v) => {
             document.querySelectorAll('.view-content').forEach(s => s.classList.add('hidden'));
@@ -949,18 +883,18 @@
             const ab = parseInt(document.getElementById('bet-away').value) || 0;
             try {
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'guesses'), { matchId: activeMatchId, userName: playerName.trim().toUpperCase(), homeBet: hb, awayBet: ab, points: 0, timestamp: Date.now() });
-                closeModal('modal-bet'); showToast("Sucesso!");
+                closeModal('modal-bet'); showToast("Palpite salvo!");
             } catch(e) { showToast("Erro."); }
         };
         window.deleteMatchAdmin = async () => {
-            if (!activeMatchId || !confirm("Remover jogo e palpites?")) return;
+            if (!activeMatchId || !confirm("Remover jogo e todos os palpites associados?")) return;
             const bets = userGuesses.filter(d => d.matchId === activeMatchId);
             const batch = writeBatch(db);
             batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'matches', activeMatchId));
             bets.forEach(b => batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', b.id)));
             await batch.commit();
             closeModal('modal-match-admin');
-            showToast("Dados removidos.");
+            showToast("Excluído com sucesso.");
         };
         window.exportRankingPDF = () => window.print();
 
