@@ -15,9 +15,10 @@
         }
 
         body {
-            background-color: #f3f4f6;
+            background-color: #f8fafc;
             font-family: 'Inter', sans-serif;
             font-size: 14px;
+            color: #1e293b;
         }
 
         .bg-piaui-green {
@@ -37,20 +38,21 @@
         }
 
         .card-match {
-            transition: transform 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .card-match:hover {
-            transform: translateY(-2px);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
         .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--pi-green);
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid var(--pi-green);
             border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            animation: spin 1s linear infinite;
+            width: 30px;
+            height: 30px;
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
@@ -66,12 +68,13 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 100;
+            z-index: 200;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
             align-items: center;
             justify-content: center;
         }
@@ -80,13 +83,26 @@
             display: flex;
         }
 
+        .rank-1 {
+            background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
+        }
+
+        .rank-2 {
+            background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
+        }
+
+        .rank-3 {
+            background: linear-gradient(135deg, #ffedd5 0%, #fdba74 100%);
+        }
+
         @media print {
 
             header,
             nav,
             button,
             #auth-box,
-            .no-print {
+            .no-print,
+            .rule-box {
                 display: none !important;
             }
 
@@ -105,26 +121,16 @@
             }
         }
 
-        .mobile-menu-btn {
-            cursor: pointer;
-            z-index: 100;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-        }
-
         .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
+            width: 5px;
         }
 
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: #f1f5f9;
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #ccc;
+            background: #cbd5e1;
             border-radius: 10px;
         }
     </style>
@@ -133,23 +139,30 @@
 <body class="pb-12">
 
     <!-- Header -->
-    <header class="bg-piaui-green text-white shadow-md no-print sticky top-0 z-[100]">
+    <header class="bg-piaui-green text-white shadow-lg no-print sticky top-0 z-[100]">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="bg-white p-1.5 rounded-full">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('home')">
+                <div class="bg-white p-2 rounded-xl shadow-inner">
                     <i class="fas fa-futbol text-piaui-green text-xl"></i>
                 </div>
-                <h1 class="text-lg md:text-xl font-bold tracking-tight text-white uppercase">Bolão <span
-                        class="text-piaui-yellow text-opacity-90">Piauizão</span></h1>
+                <div>
+                    <h1 class="text-lg md:text-xl font-black tracking-tight uppercase leading-none">Bolão <span
+                            class="text-piaui-yellow">Piauizão</span></h1>
+                    <p class="text-[8px] opacity-80 font-bold tracking-widest uppercase">Campeonato Piauiense</p>
+                </div>
             </div>
-            <nav id="main-nav" class="hidden md:flex space-x-5 font-bold text-xs uppercase tracking-wider">
-                <a href="#" onclick="switchView('home')" class="hover:text-piaui-yellow transition">Início</a>
-                <a href="#" onclick="switchView('ranking')" class="hover:text-piaui-yellow transition">Ranking</a>
-                <a href="#" onclick="toggleAdminLogin()" class="opacity-50 hover:opacity-100 transition"><i
-                        class="fas fa-lock text-sm"></i></a>
+            <nav id="main-nav" class="hidden md:flex items-center space-x-6 font-bold text-xs uppercase tracking-wider">
+                <a href="#" onclick="switchView('home')" class="hover:text-piaui-yellow transition flex items-center"><i
+                        class="fas fa-home mr-2"></i>Início</a>
+                <a href="#" onclick="switchView('ranking')"
+                    class="hover:text-piaui-yellow transition flex items-center"><i
+                        class="fas fa-trophy mr-2"></i>Ranking</a>
+                <div class="h-4 w-px bg-white/20"></div>
+                <a href="#" onclick="toggleAdminLogin()" class="opacity-40 hover:opacity-100 transition"><i
+                        class="fas fa-cog"></i></a>
             </nav>
-            <button class="md:hidden mobile-menu-btn bg-green-700 hover:bg-green-800 transition" onclick="toggleMenu()"
-                aria-label="Menu">
+            <button class="md:hidden p-2 bg-green-700/50 hover:bg-green-700 rounded-lg transition"
+                onclick="toggleMenu()">
                 <i class="fas fa-bars text-lg"></i>
             </button>
         </div>
@@ -157,303 +170,346 @@
 
     <!-- Mobile Menu -->
     <div id="mobile-menu"
-        class="hidden bg-piaui-green text-white px-4 py-4 space-y-4 border-t border-green-700 no-print sticky top-[52px] z-[90] shadow-xl">
+        class="hidden bg-piaui-green text-white px-4 py-6 space-y-4 border-t border-green-700/50 no-print sticky top-[56px] z-[90] shadow-2xl">
         <a href="#" onclick="switchView('home')"
-            class="block py-2 border-b border-green-700 font-bold uppercase text-xs tracking-widest"><i
-                class="fas fa-home mr-3"></i>Início</a>
+            class="flex items-center p-3 bg-green-700/30 rounded-xl font-bold uppercase text-xs tracking-widest"><i
+                class="fas fa-home w-8"></i>Início</a>
         <a href="#" onclick="switchView('ranking')"
-            class="block py-2 border-b border-green-700 font-bold uppercase text-xs tracking-widest"><i
-                class="fas fa-trophy mr-3"></i>Ranking</a>
+            class="flex items-center p-3 bg-green-700/30 rounded-xl font-bold uppercase text-xs tracking-widest"><i
+                class="fas fa-trophy w-8"></i>Ranking</a>
         <a href="#" onclick="toggleAdminLogin()"
-            class="block py-2 text-yellow-300 font-bold uppercase text-xs tracking-widest"><i
-                class="fas fa-user-shield mr-3"></i>Acesso Admin</a>
+            class="flex items-center p-3 text-yellow-300 font-bold uppercase text-xs tracking-widest"><i
+                class="fas fa-user-shield w-8"></i>Área do Admin</a>
     </div>
 
     <main class="container mx-auto px-4 mt-6">
 
         <!-- VIEW: HOME -->
         <section id="view-home" class="view-content">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-                <div>
-                    <h2 class="text-xl md:text-2xl font-black text-gray-800 uppercase tracking-tighter">Jogos da Rodada
-                    </h2>
-                    <p class="text-xs text-gray-500 font-medium">Confira as partidas e registre seus palpites!</p>
+
+            <!-- Resumo do Usuário (Logado) -->
+            <div id="user-stats-bar" class="hidden grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
+                    <p class="text-[9px] text-slate-400 font-black uppercase mb-1">Meus Pontos</p>
+                    <p id="stat-points" class="text-2xl font-black text-piaui-green">0</p>
                 </div>
-                <div id="user-info"
-                    class="bg-white p-3 rounded-xl shadow-sm border-l-4 border-piaui-blue hidden min-w-[200px]">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="text-[9px] text-gray-400 uppercase font-bold tracking-wider">Acessando como:</p>
-                            <p class="font-bold text-piaui-blue text-sm leading-tight" id="display-user-name"></p>
-                        </div>
-                        <button onclick="logoutPlayer()"
-                            class="text-[9px] text-red-500 font-black hover:text-red-700 transition ml-3 bg-red-50 px-2 py-1 rounded-md uppercase border border-red-100">SAIR</button>
-                    </div>
+                <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
+                    <p class="text-[9px] text-slate-400 font-black uppercase mb-1">Posição</p>
+                    <p id="stat-rank" class="text-2xl font-black text-blue-600">--</p>
+                </div>
+                <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
+                    <p class="text-[9px] text-slate-400 font-black uppercase mb-1">Cravadas</p>
+                    <p id="stat-cravadas" class="text-2xl font-black text-orange-500">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
+                    <p class="text-[9px] text-slate-400 font-black uppercase mb-1">Participante</p>
+                    <p id="stat-name" class="text-sm font-black text-slate-700 truncate">--</p>
+                    <button onclick="logoutPlayer()"
+                        class="text-[8px] text-red-500 font-bold uppercase hover:underline">Sair</button>
                 </div>
             </div>
 
-            <!-- Banner de Regras Atualizadas -->
-            <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6 shadow-sm">
-                <div class="flex items-start space-x-3">
-                    <div class="text-piaui-blue mt-0.5"><i class="fas fa-info-circle"></i></div>
-                    <div>
-                        <h4 class="text-[10px] font-black text-piaui-blue uppercase tracking-widest mb-2">Regras de
-                            Pontuação (Resultado da Partida)</h4>
-                        <div class="flex flex-wrap gap-x-6 gap-y-2">
-                            <div class="flex items-center text-[11px] text-blue-900 font-bold">
-                                <span
-                                    class="bg-piaui-green text-white w-4 h-4 rounded-md flex items-center justify-center mr-2 text-[9px]">3</span>
-                                <span>3 pontos: Acertou o Vencedor</span>
-                            </div>
-                            <div class="flex items-center text-[11px] text-blue-900 font-bold">
-                                <span
-                                    class="bg-blue-600 text-white w-4 h-4 rounded-md flex items-center justify-center mr-2 text-[9px]">1</span>
-                                <span>1 ponto: Acertou o Empate</span>
-                            </div>
-                            <div class="flex items-center text-[11px] text-blue-900 font-bold opacity-70">
-                                <span
-                                    class="bg-gray-400 text-white w-4 h-4 rounded-md flex items-center justify-center mr-2 text-[9px]">0</span>
-                                <span>0 ponto: Errou o resultado</span>
-                            </div>
+            <!-- Regulamento Explicativo -->
+            <div
+                class="rule-box bg-white border border-slate-100 rounded-3xl p-6 mb-8 shadow-sm overflow-hidden relative">
+                <div class="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                    <i class="fas fa-shield-alt text-8xl text-piaui-green"></i>
+                </div>
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="bg-blue-50 text-blue-600 p-2 rounded-xl">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter">Regras de Pontuação</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="flex items-center p-3 bg-green-50 rounded-2xl border border-green-100">
+                        <span
+                            class="bg-green-600 text-white w-10 h-10 flex items-center justify-center rounded-xl font-black mr-3 shadow-md">15</span>
+                        <div>
+                            <p class="text-[10px] font-black text-green-700 uppercase">Placar Exato</p>
+                            <p class="text-[9px] text-green-600 font-medium">Acertou na mosca o placar.</p>
                         </div>
                     </div>
+                    <div class="flex items-center p-3 bg-blue-50 rounded-2xl border border-blue-100">
+                        <span
+                            class="bg-blue-600 text-white w-10 h-10 flex items-center justify-center rounded-xl font-black mr-3 shadow-md">10</span>
+                        <div>
+                            <p class="text-[10px] font-black text-blue-700 uppercase">Vencedor + Saldo</p>
+                            <p class="text-[9px] text-blue-600 font-medium">Acertou vencedor e saldo de gols.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                        <span
+                            class="bg-slate-400 text-white w-10 h-10 flex items-center justify-center rounded-xl font-black mr-3 shadow-md">05</span>
+                        <div>
+                            <p class="text-[10px] font-black text-slate-600 uppercase">Acertou Vencedor</p>
+                            <p class="text-[9px] text-slate-500 font-medium">Acertou apenas quem vence/empata.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-4 text-[10px] font-bold text-slate-400">
+                    <div class="flex items-center"><i class="fas fa-clock mr-2 text-orange-400"></i> PRAZO: ATÉ 1H ANTES
+                        DO JOGO</div>
+                    <div class="flex items-center"><i class="fas fa-balance-scale mr-2 text-blue-400"></i> DESEMPATE:
+                        MAIOR Nº DE CRAVADAS</div>
                 </div>
             </div>
 
             <div id="auth-box"
-                class="bg-white p-5 rounded-2xl shadow-sm mb-6 max-w-md mx-auto no-print border border-gray-100">
-                <h3 class="text-sm font-bold mb-3 text-center text-gray-700 uppercase tracking-tight">Identifique-se
-                    para palpitar</h3>
-                <div class="flex space-x-2">
-                    <input type="text" id="input-player-name" placeholder="Seu Nome"
-                        class="flex-1 border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none text-xs transition-all uppercase font-medium">
+                class="bg-white p-8 rounded-3xl shadow-sm mb-10 max-w-md mx-auto no-print border border-slate-100 text-center">
+                <h3 class="text-sm font-black mb-4 text-slate-700 uppercase tracking-widest">Acesse seu Painel</h3>
+                <p class="text-[11px] text-slate-400 mb-6 font-medium">Identifique-se com seu nome para começar a
+                    palpitar e subir no ranking.</p>
+                <div class="flex flex-col space-y-3">
+                    <input type="text" id="input-player-name" placeholder="Seu Nome Completo"
+                        class="w-full bg-slate-50 border-0 rounded-2xl px-5 py-4 text-xs font-black uppercase outline-none focus:ring-2 focus:ring-green-500 transition-all placeholder:text-slate-300">
                     <button onclick="setPlayerName()"
-                        class="bg-piaui-green text-white px-5 py-2 rounded-lg font-bold hover:bg-opacity-90 transition active:scale-95 shadow-sm uppercase text-[10px]">Entrar</button>
+                        class="w-full bg-piaui-green text-white py-4 rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-xl shadow-green-900/10 hover:scale-[1.02] active:scale-95 transition-all">Entrar
+                        no Bolão</button>
                 </div>
             </div>
 
-            <div id="matches-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                <div class="col-span-full flex flex-col items-center justify-center py-10">
-                    <div class="loader mb-3"></div>
-                    <p class="text-gray-400 font-medium text-xs italic tracking-wider">Sincronizando dados...</p>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter">Próximos Jogos</h2>
+                <div
+                    class="flex items-center text-[10px] font-bold text-slate-400 bg-white px-3 py-1.5 rounded-full border border-slate-100">
+                    <span id="open-matches-count" class="text-piaui-green mr-1">0</span> Abertos
+                </div>
+            </div>
+
+            <div id="matches-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="col-span-full flex flex-col items-center justify-center py-20">
+                    <div class="loader mb-4"></div>
+                    <p class="text-slate-400 font-black text-[10px] uppercase tracking-widest">Sincronizando placares...
+                    </p>
                 </div>
             </div>
         </section>
 
         <!-- VIEW: RANKING -->
         <section id="view-ranking" class="view-content hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl md:text-2xl font-black text-gray-800 uppercase tracking-tighter">Classificação Geral
-                </h2>
-                <button onclick="exportRankingPDF()"
-                    class="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 no-print transition shadow-md font-bold text-[10px] uppercase tracking-widest">
-                    <i class="fas fa-file-pdf mr-1"></i>PDF / IMPRIMIR
-                </button>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tighter">Classificação</h2>
+                    <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Quem será o rei do Piauizão?
+                    </p>
+                </div>
+                <div class="flex w-full md:w-auto gap-2">
+                    <div class="relative flex-1 md:w-64">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-xs"></i>
+                        <input type="text" id="ranking-search" oninput="calculateRanking()"
+                            placeholder="Buscar participante..."
+                            class="w-full bg-white border border-slate-100 rounded-2xl pl-10 pr-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    </div>
+                    <button onclick="window.print()"
+                        class="bg-white text-slate-700 px-4 py-3 rounded-2xl no-print font-black text-[10px] uppercase border border-slate-200 shadow-sm hover:bg-slate-50">
+                        <i class="fas fa-print mr-1"></i>
+                    </button>
+                </div>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-                <table class="w-full text-left">
-                    <thead class="bg-gray-50 border-b">
-                        <tr>
-                            <th class="px-5 py-3 font-black text-gray-400 uppercase text-[9px] tracking-widest">Pos</th>
-                            <th class="px-5 py-3 font-black text-gray-400 uppercase text-[9px] tracking-widest">
-                                Participante</th>
-                            <th
-                                class="px-5 py-3 font-black text-gray-400 text-center uppercase text-[9px] tracking-widest">
-                                Palpites</th>
-                            <th
-                                class="px-5 py-3 font-black text-gray-400 text-right uppercase text-[9px] tracking-widest">
-                                Pontos</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ranking-table-body"></tbody>
-                </table>
+            <div class="bg-white rounded-[2rem] shadow-sm overflow-hidden border border-slate-100">
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-slate-50/50 border-b border-slate-100">
+                                <th class="px-6 py-5 font-black text-slate-400 uppercase text-[9px] tracking-widest">
+                                    Posição</th>
+                                <th class="px-6 py-5 font-black text-slate-400 uppercase text-[9px] tracking-widest">
+                                    Participante</th>
+                                <th
+                                    class="px-6 py-5 font-black text-slate-400 text-center uppercase text-[9px] tracking-widest">
+                                    Jogos</th>
+                                <th
+                                    class="px-6 py-5 font-black text-slate-400 text-center uppercase text-[9px] tracking-widest">
+                                    Cravadas</th>
+                                <th
+                                    class="px-6 py-5 font-black text-slate-400 text-right uppercase text-[9px] tracking-widest">
+                                    Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ranking-table-body" class="divide-y divide-slate-50"></tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
         <!-- VIEW: ADMIN -->
         <section id="view-admin" class="view-content hidden">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                <h2 class="text-xl font-black text-red-600 flex items-center uppercase tracking-tighter"><i
-                        class="fas fa-user-shield mr-2"></i>Painel Admin</h2>
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                <h2 class="text-xl font-black text-red-600 uppercase tracking-tighter"><i
+                        class="fas fa-user-shield mr-3"></i>Gerenciamento</h2>
                 <div class="flex flex-wrap gap-2 w-full md:w-auto">
                     <button onclick="openMatchModal()"
-                        class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition shadow-md text-xs uppercase tracking-widest min-w-[120px]">
-                        <i class="fas fa-plus mr-1"></i>Novo Jogo
-                    </button>
+                        class="flex-1 bg-slate-800 text-white px-5 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition shadow-lg shadow-slate-900/10">Novo
+                        Jogo</button>
                     <button onclick="openParticipantsManager()"
-                        class="flex-1 bg-piaui-blue text-white px-4 py-2 rounded-lg font-bold hover:bg-opacity-90 transition shadow-md text-xs uppercase tracking-widest min-w-[120px]">
-                        <i class="fas fa-users mr-1"></i>Participantes
-                    </button>
+                        class="flex-1 bg-white text-slate-700 border border-slate-200 px-5 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition">Participantes</button>
                     <button onclick="recalculateAllPoints()"
-                        class="flex-1 bg-orange-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-600 transition shadow-md text-xs uppercase tracking-widest min-w-[120px]">
-                        <i class="fas fa-sync-alt mr-1"></i>Recalcular Ranking
-                    </button>
-                    <button onclick="logoutAdmin()"
-                        class="bg-gray-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-700 transition text-[10px] uppercase">Sair</button>
+                        class="flex-1 bg-orange-500 text-white px-5 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-600 transition shadow-lg shadow-orange-900/10">Recalcular</button>
                 </div>
             </div>
-            <div class="grid grid-cols-1 gap-3" id="admin-matches-list"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="admin-matches-list"></div>
         </section>
     </main>
 
-    <!-- Modal: Palpite Individual -->
+    <!-- Modal: Palpite -->
     <div id="modal-bet" class="modal no-print">
-        <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl border border-gray-100">
-            <h3 class="text-lg font-black mb-5 text-center text-piaui-green uppercase tracking-tight"
-                id="modal-bet-title">Seu Palpite</h3>
+        <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full mx-4 shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 bg-green-50 w-32 h-32 rounded-full opacity-50"></div>
+            <h3 class="text-lg font-black mb-6 text-center text-slate-800 uppercase tracking-tighter"
+                id="modal-bet-title">Enviar Palpite</h3>
             <div
-                class="flex items-center justify-between mb-6 space-x-3 bg-gray-50 p-5 rounded-xl border border-gray-200">
+                class="flex items-center justify-between mb-8 space-x-4 bg-slate-50 p-6 rounded-[2rem] border border-slate-100 shadow-inner">
                 <div class="text-center flex-1">
-                    <p class="font-black text-[9px] mb-2 text-gray-400 uppercase truncate" id="home-team-name"></p>
+                    <p class="font-black text-[9px] mb-3 text-slate-400 uppercase truncate" id="home-team-name"></p>
                     <input type="number" id="bet-home"
-                        class="w-14 h-14 text-2xl text-center border-2 border-gray-200 rounded-xl focus:border-piaui-green outline-none bg-white transition-all shadow-sm font-black"
+                        class="w-16 h-16 text-3xl text-center border-0 bg-white rounded-2xl shadow-sm focus:ring-4 focus:ring-green-500/20 outline-none font-black transition-all"
                         min="0" value="0">
                 </div>
-                <div class="text-xl font-black text-gray-300">X</div>
+                <div class="text-xl font-black text-slate-200">X</div>
                 <div class="text-center flex-1">
-                    <p class="font-black text-[9px] mb-2 text-gray-400 uppercase truncate" id="away-team-name"></p>
+                    <p class="font-black text-[9px] mb-3 text-slate-400 uppercase truncate" id="away-team-name"></p>
                     <input type="number" id="bet-away"
-                        class="w-14 h-14 text-2xl text-center border-2 border-gray-200 rounded-xl focus:border-piaui-green outline-none bg-white transition-all shadow-sm font-black"
+                        class="w-16 h-16 text-3xl text-center border-0 bg-white rounded-2xl shadow-sm focus:ring-4 focus:ring-green-500/20 outline-none font-black transition-all"
                         min="0" value="0">
                 </div>
             </div>
-            <div class="flex flex-col space-y-2">
+            <div class="flex flex-col space-y-3">
                 <button onclick="saveBet()"
-                    class="bg-piaui-green text-white py-3 rounded-xl font-black hover:bg-opacity-90 transition active:scale-95 shadow-md uppercase tracking-widest text-xs">Confirmar</button>
+                    class="w-full bg-piaui-green text-white py-4 rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-lg shadow-green-900/20 hover:scale-[1.02] active:scale-95 transition-all">Confirmar
+                    Palpite</button>
                 <button onclick="closeModal('modal-bet')"
-                    class="text-gray-400 font-bold py-2 hover:text-gray-600 transition uppercase text-[10px]">Cancelar</button>
+                    class="w-full text-slate-400 font-black py-2 mt-2 uppercase text-[9px] tracking-widest hover:text-slate-600">Voltar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Login Admin -->
-    <div id="modal-admin-login" class="modal no-print">
-        <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl border border-gray-100 text-center">
-            <h3 class="text-lg font-black mb-4 text-gray-800 uppercase tracking-tight">Acesso Restrito</h3>
-            <input type="password" id="admin-pass" placeholder="Senha"
-                class="w-full border border-gray-200 rounded-lg px-4 py-3 mb-4 focus:ring-2 focus:ring-red-500 outline-none text-center font-bold">
-            <button onclick="loginAdmin()"
-                class="w-full bg-red-600 text-white py-3 rounded-xl font-black hover:bg-red-700 transition uppercase tracking-widest text-xs">Entrar</button>
-            <button onclick="closeModal('modal-admin-login')"
-                class="w-full text-gray-400 font-bold py-2 mt-2 uppercase text-[10px]">Fechar</button>
-        </div>
-    </div>
-
-    <!-- Modal: Configuração de Jogo (Admin) -->
+    <!-- Modais Genéricos de Sistema (Admin/Participantes) continuam os mesmos mas com UI polida -->
     <div id="modal-match-admin" class="modal no-print">
         <div
-            class="bg-white rounded-2xl p-6 max-w-4xl w-full mx-4 shadow-2xl overflow-y-auto max-h-[90vh] border border-gray-200">
-            <h3 class="text-xl font-black mb-6 text-center text-gray-800 uppercase tracking-tight"
-                id="match-admin-title">Configurar Jogo</h3>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="space-y-4">
-                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                        <div class="grid grid-cols-2 gap-3">
+            class="bg-white rounded-3xl p-8 max-w-4xl w-full mx-4 shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
+            <h3 class="text-xl font-black mb-8 text-center uppercase tracking-tight" id="match-admin-title">Configurar
+                Jogo</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div class="space-y-6">
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                        <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
-                                <label class="block text-[9px] font-black text-gray-500 mb-1 uppercase">Rodada</label>
-                                <input type="text" id="admin-match-round" placeholder="01/07"
-                                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs font-bold outline-none">
+                                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Rodada</label>
+                                <input type="text" id="admin-match-round"
+                                    class="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-black uppercase outline-none">
                             </div>
                             <div>
-                                <label class="block text-[9px] font-black text-gray-500 mb-1 uppercase">Data</label>
-                                <input type="text" id="admin-match-date" placeholder="10/01 16:00"
-                                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs font-bold outline-none">
+                                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Início
+                                    (AAAA-MM-DD HH:MM)</label>
+                                <input type="text" id="admin-match-date" placeholder="2024-02-25 16:00"
+                                    class="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-black outline-none">
                             </div>
                         </div>
-                        <div class="mt-3">
-                            <label class="block text-[9px] font-black text-gray-500 mb-1 uppercase">Estádio</label>
-                            <input type="text" id="admin-match-stadium" placeholder="Estádio..."
-                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs font-bold outline-none">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Estádio /
+                                Cidade</label>
+                            <input type="text" id="admin-match-stadium"
+                                class="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-black uppercase outline-none">
                         </div>
                     </div>
-                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
-                        <div>
-                            <label class="block text-[9px] font-black text-gray-500 mb-1 uppercase">Time
-                                Mandante</label>
-                            <input type="text" id="admin-home-team"
-                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs font-black outline-none uppercase">
+                    <div class="bg-white p-6 rounded-2xl border-2 border-slate-50 space-y-4">
+                        <div class="grid grid-cols-1 gap-3">
+                            <input type="text" id="admin-home-team" placeholder="Mandante"
+                                class="w-full bg-slate-50 border-0 rounded-xl p-3 text-xs font-black uppercase outline-none">
+                            <input type="text" id="admin-away-team" placeholder="Visitante"
+                                class="w-full bg-slate-50 border-0 rounded-xl p-3 text-xs font-black uppercase outline-none">
                         </div>
-                        <div>
-                            <label class="block text-[9px] font-black text-gray-500 mb-1 uppercase">Time
-                                Visitante</label>
-                            <input type="text" id="admin-away-team"
-                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs font-black outline-none uppercase">
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 pt-1">
-                            <div>
-                                <label
-                                    class="block text-[9px] font-black text-green-700 mb-1 uppercase text-center">Gols
+                        <div class="grid grid-cols-2 gap-4 pt-2">
+                            <div class="text-center">
+                                <label class="block text-[9px] font-black text-green-600 uppercase mb-1">Gols
                                     Casa</label>
                                 <input type="number" id="admin-home-score"
-                                    class="w-full border-2 border-green-100 rounded-xl px-2 py-2 text-xl font-black text-center outline-none bg-white"
+                                    class="w-full bg-slate-50 border-0 rounded-xl p-4 text-2xl font-black text-center outline-none"
                                     value="0">
                             </div>
-                            <div>
-                                <label
-                                    class="block text-[9px] font-black text-green-700 mb-1 uppercase text-center">Gols
+                            <div class="text-center">
+                                <label class="block text-[9px] font-black text-green-600 uppercase mb-1">Gols
                                     Fora</label>
                                 <input type="number" id="admin-away-score"
-                                    class="w-full border-2 border-green-100 rounded-xl px-2 py-2 text-xl font-black text-center outline-none bg-white"
+                                    class="w-full bg-slate-50 border-0 rounded-xl p-4 text-2xl font-black text-center outline-none"
                                     value="0">
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-3 bg-yellow-50 p-3 rounded-xl border border-yellow-200">
-                        <input type="checkbox" id="admin-is-finished" class="w-5 h-5 accent-yellow-600 cursor-pointer">
-                        <label for="admin-is-finished"
-                            class="text-[10px] font-black text-yellow-900 uppercase cursor-pointer tracking-tight">ENCERRAR
-                            E CALCULAR PONTOS</label>
+                    <div class="flex items-center space-x-3 bg-yellow-50 p-4 rounded-2xl border border-yellow-100">
+                        <input type="checkbox" id="admin-is-finished" class="w-5 h-5 accent-yellow-600 rounded">
+                        <label for="admin-is-finished" class="text-[10px] font-black text-yellow-800 uppercase">Encerrar
+                            e Processar Pontos</label>
                     </div>
-                    <div class="pt-1 flex flex-col space-y-2">
-                        <button onclick="saveMatchAdmin()"
-                            class="bg-blue-600 text-white py-2.5 rounded-lg font-black hover:bg-blue-700 transition shadow-md text-xs uppercase">Gravar
-                            Jogo</button>
-                        <button onclick="deleteMatchAdmin()" id="btn-delete-match"
-                            class="hidden text-red-600 font-bold text-[9px] py-1 hover:bg-red-50 rounded uppercase tracking-wider">Excluir
-                            Jogo</button>
-                    </div>
+                    <button onclick="saveMatchAdmin()"
+                        class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-blue-900/10">Gravar
+                        Dados do Jogo</button>
+                    <button onclick="deleteMatchAdmin()" id="btn-delete-match"
+                        class="hidden text-red-500 font-bold text-[10px] uppercase w-full">Excluir Jogo
+                        Permanentemente</button>
                 </div>
-                <div class="lg:border-l lg:pl-8 space-y-3">
-                    <label class="block text-[10px] font-black text-piaui-green uppercase tracking-widest">Importar
-                        Lista (2x1 Nome)</label>
+                <div class="lg:border-l border-slate-100 lg:pl-10">
+                    <label
+                        class="block text-[11px] font-black text-piaui-green uppercase tracking-widest mb-4">Importação
+                        em Lote</label>
+                    <p class="text-[9px] text-slate-400 mb-4 font-bold uppercase">Formato: 2x1 Nome do Participante</p>
                     <textarea id="bulk-bets-input" rows="12"
-                        class="w-full border border-gray-200 rounded-xl p-4 text-[11px] font-mono bg-gray-50 focus:bg-white outline-none transition-all shadow-inner"
+                        class="w-full border border-slate-100 p-5 text-[11px] font-mono bg-slate-50 rounded-2xl outline-none focus:bg-white transition-all shadow-inner"
                         placeholder="0X1 Yan Gabriel&#10;1X3 Hudson"></textarea>
                     <button onclick="processBulkImport()"
-                        class="w-full bg-piaui-green text-white py-3 rounded-xl font-black text-[10px] hover:bg-opacity-90 transition shadow-md uppercase tracking-widest">Processar
+                        class="w-full bg-slate-200 text-slate-700 mt-4 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-300 transition">Processar
                         Lista</button>
                 </div>
             </div>
             <button onclick="closeModal('modal-match-admin')"
-                class="w-full text-gray-400 font-bold text-[9px] mt-6 hover:text-gray-600 uppercase tracking-widest border-t pt-4">Fechar</button>
+                class="w-full text-slate-300 font-black text-[10px] mt-10 uppercase border-t pt-6">Fechar
+                Painel</button>
+        </div>
+    </div>
+
+    <!-- Modal Login Admin -->
+    <div id="modal-admin-login" class="modal no-print">
+        <div class="bg-white rounded-[2.5rem] p-10 max-w-sm w-full mx-4 shadow-2xl text-center">
+            <div class="bg-red-50 text-red-500 w-16 h-16 flex items-center justify-center rounded-2xl mx-auto mb-6">
+                <i class="fas fa-lock text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-black mb-2 uppercase tracking-tighter">Área Restrita</h3>
+            <p class="text-[11px] text-slate-400 mb-8 font-bold uppercase">Apenas organizadores</p>
+            <input type="password" id="admin-pass" placeholder="Senha de Acesso"
+                class="w-full bg-slate-50 border-0 rounded-2xl px-5 py-4 mb-4 text-center font-black outline-none focus:ring-2 focus:ring-red-500 transition-all">
+            <button onclick="loginAdmin()"
+                class="w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase text-xs shadow-xl shadow-red-900/20">Acessar
+                Painel</button>
+            <button onclick="closeModal('modal-admin-login')"
+                class="w-full text-slate-300 font-black py-2 mt-4 uppercase text-[9px] tracking-widest">Cancelar</button>
         </div>
     </div>
 
     <!-- Modal: Gerenciar Participantes -->
     <div id="modal-participants" class="modal no-print">
-        <div class="bg-white rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl border border-gray-100">
-            <h3 class="text-xl font-black mb-4 text-center text-piaui-blue uppercase tracking-tight">Gerenciar
-                Participantes</h3>
+        <div class="bg-white rounded-3xl p-8 max-w-lg w-full mx-4 shadow-2xl">
+            <h3 class="text-xl font-black mb-6 text-center text-slate-800 uppercase tracking-tighter">Participantes</h3>
             <div id="participants-list"
-                class="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar border-y py-4 border-gray-100">
-                <div class="text-center text-gray-300 text-[10px] py-10 uppercase italic">Carregando lista...</div>
-            </div>
+                class="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar border-y py-6 border-slate-50"></div>
             <button onclick="closeModal('modal-participants')"
-                class="w-full mt-6 text-gray-400 font-bold py-2 uppercase text-[10px] hover:text-gray-600 transition tracking-widest">Fechar</button>
+                class="w-full mt-8 text-slate-400 font-black py-2 uppercase text-[10px] tracking-widest">Fechar
+                Janela</button>
         </div>
     </div>
 
-    <!-- Notification Toast -->
     <div id="toast"
-        class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-2xl shadow-2xl hidden z-[300] border border-gray-700">
-        <span id="toast-msg" class="font-bold text-xs uppercase tracking-tight">Mensagem</span>
+        class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-8 py-4 rounded-3xl shadow-2xl hidden z-[300] border border-white/10">
+        <span id="toast-msg" class="font-black text-[10px] uppercase tracking-widest"></span>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, writeBatch, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, writeBatch, getDocs, query, where, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAdlBq3u0C5npsi_pB-CYxPJxxlIj1ucYg",
@@ -465,21 +521,15 @@
             measurementId: "G-MKSKR9SL5R"
         };
         
-        const appId = 'bolao-piauizao-oficial';
-        const matchesList = document.getElementById('matches-list');
+        const appId = 'bolao-piauizao-oficial'; 
 
-        let auth, db, appInstance;
-        let currentUser = null;
-        let isAdmin = false;
-        let matches = [];
-        let userGuesses = [];
-        let activeMatchId = null;
-        let playerName = localStorage.getItem('bolao_user_name') || "";
-        let unsubs = [];
+        let auth, db, currentUser = null, isAdmin = false;
+        let matches = [], userGuesses = [], playerName = localStorage.getItem('bolao_user_name') || "";
+        let activeMatchId = null, unsubs = [];
 
         async function init() {
             try {
-                appInstance = initializeApp(firebaseConfig);
+                const appInstance = initializeApp(firebaseConfig);
                 auth = getAuth(appInstance);
                 db = getFirestore(appInstance);
                 await signInAnonymously(auth);
@@ -490,10 +540,7 @@
                         if (playerName) setPlayerUI();
                     }
                 });
-            } catch (err) {
-                console.error(err);
-                if (matchesList) matchesList.innerHTML = `<div class='col-span-full text-center py-10 text-red-500 text-xs font-bold uppercase tracking-widest'>Erro ao conectar ao banco de dados.</div>`;
-            }
+            } catch (err) { console.error("Firebase Init Error:", err); }
         }
 
         function startListeners() {
@@ -518,323 +565,365 @@
             }));
         }
 
-        // --- LÓGICA DE PONTUAÇÃO (NOVA REGRA) ---
-        // 3 pts se acertar o vencedor. 1 pt se acertar o empate.
-        function calculatePointsLogic(guessH, guessA, realH, realA) {
-            const guessResult = guessH > guessA ? 'home' : (guessA > guessH ? 'away' : 'draw');
-            const realResult = realH > realA ? 'home' : (realA > realH ? 'away' : 'draw');
-
+        function calculatePointsLogic(gH, gA, rH, rA) {
+            const guessH = Number(gH), guessA = Number(gA);
+            const realH = Number(rH), realA = Number(rA);
+            if (guessH === realH && guessA === realA) return 15;
+            const guessResult = Math.sign(guessH - guessA);
+            const realResult = Math.sign(realH - realA);
             if (guessResult === realResult) {
-                return (realResult === 'draw') ? 1 : 3;
+                const guessSaldo = guessH - guessA;
+                const realSaldo = realH - realA;
+                if (guessResult !== 0 && guessSaldo === realSaldo) return 10;
+                return 5;
             }
             return 0;
         }
 
         window.setPlayerName = () => {
-            let nameInput = document.getElementById('input-player-name').value.trim();
-            if (!nameInput) return showToast("Digite seu nome!");
-            playerName = nameInput.toUpperCase();
+            let val = document.getElementById('input-player-name').value.trim().toUpperCase();
+            if (!val) return showToast("Digite seu nome para entrar!");
+            playerName = val;
             localStorage.setItem('bolao_user_name', playerName);
             setPlayerUI();
+            showToast(`Bem-vindo, ${playerName.split(' ')[0]}!`);
         };
 
         window.logoutPlayer = () => {
             playerName = ""; localStorage.removeItem('bolao_user_name');
             document.getElementById('auth-box').classList.remove('hidden');
-            document.getElementById('user-info').classList.add('hidden');
+            document.getElementById('user-stats-bar').classList.add('hidden');
             renderMatches();
         };
 
         function setPlayerUI() {
             document.getElementById('auth-box').classList.add('hidden');
-            document.getElementById('user-info').classList.remove('hidden');
-            document.getElementById('display-user-name').innerText = playerName;
+            document.getElementById('user-stats-bar').classList.remove('hidden');
+            document.getElementById('stat-name').innerText = playerName;
             renderMatches();
+            calculateRanking();
         }
 
         function renderMatches() {
-            if (!matchesList) return;
+            const list = document.getElementById('matches-list');
+            if (!list) return;
             if (matches.length === 0) {
-                matchesList.innerHTML = `<div class='col-span-full text-center py-16 text-gray-400 font-bold uppercase text-[10px] tracking-widest italic opacity-50'>Nenhum jogo cadastrado.</div>`;
+                list.innerHTML = `<div class='col-span-full text-center py-20 text-slate-300 font-black uppercase text-[11px] italic tracking-widest'>Nenhum jogo cadastrado no momento.</div>`;
                 return;
             }
-
+            
+            // Ordena: Abertos primeiro, depois encerrados
             const sorted = [...matches].sort((a, b) => {
-                if (a.status === 'open' && b.status === 'finished') return -1;
-                if (a.status === 'finished' && b.status === 'open') return 1;
-                return (a.round + a.date).localeCompare(b.round + b.date);
+                if(a.status === 'open' && b.status === 'finished') return -1;
+                if(a.status === 'finished' && b.status === 'open') return 1;
+                return new Date(a.date) - new Date(b.date);
             });
 
-            matchesList.innerHTML = sorted.map(match => {
-                const isFinished = match.status === 'finished';
-                const matchBets = userGuesses.filter(g => g.matchId === match.id);
-                const myBet = matchBets.find(g => (g.userName || '').toUpperCase() === playerName);
+            let openCount = 0;
+
+            list.innerHTML = sorted.map(match => {
+                const isFin = match.status === 'finished';
+                if (!isFin) openCount++;
+
+                const mGuesses = userGuesses.filter(g => g.matchId === match.id);
+                const myBet = mGuesses.find(g => (g.userName || '').toUpperCase() === playerName);
+                
+                let isPastDeadline = false;
+                let timeLabel = "";
+                if (match.date && match.date.includes('-')) {
+                    const matchTime = new Date(match.date).getTime();
+                    const now = Date.now();
+                    const oneHour = 60 * 60 * 1000;
+                    if (now > (matchTime - oneHour)) isPastDeadline = true;
+                    
+                    if (!isFin) {
+                        const diff = (matchTime - oneHour) - now;
+                        if (diff > 0) {
+                            const hours = Math.floor(diff / (1000 * 60 * 60));
+                            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                            timeLabel = hours > 24 ? "Mais de 24h restantes" : `Restam ${hours}h ${mins}min`;
+                        } else {
+                            timeLabel = "Apostas encerradas";
+                        }
+                    }
+                }
 
                 return `
-                    <div class="card-match bg-white rounded-3xl shadow-sm border border-gray-50 overflow-hidden">
-                        <div class="bg-gray-50 px-5 py-3 border-b flex justify-between items-center">
-                            <span class="text-[9px] font-black text-piaui-green uppercase tracking-tighter">RODADA ${match.round || '01'}</span>
-                            <span class="text-[8px] ${isFinished ? 'text-gray-400 bg-gray-200' : 'text-green-700 bg-green-50'} px-2 py-0.5 rounded-full font-black uppercase">${isFinished ? 'ENCERRADO' : 'ABERTO'}</span>
+                    <div class="card-match bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="bg-slate-50/50 px-6 py-3 border-b border-slate-50 flex justify-between items-center">
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">RODADA ${match.round || '01'}</span>
+                            <span class="text-[8px] ${isFin ? 'bg-slate-200 text-slate-500' : 'bg-green-100 text-green-700'} px-3 py-1 rounded-full font-black uppercase tracking-tighter">${isFin ? 'Encerrado' : 'Disponível'}</span>
                         </div>
                         <div class="p-6">
-                            <div class="text-center mb-4">
-                                <p class="text-[8px] text-gray-300 font-black uppercase tracking-widest mb-0.5">${match.stadium || 'Estádio'}</p>
-                                <p class="text-[11px] text-gray-700 font-black">${match.date || '--'}</p>
+                            <div class="text-center mb-6">
+                                <p class="text-[8px] text-slate-300 font-black uppercase tracking-widest mb-1">${match.stadium || 'Local Definir'}</p>
+                                <p class="text-[10px] text-slate-600 font-black uppercase">${match.date ? new Date(match.date).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : '--/-- --:--'}</p>
                             </div>
                             <div class="flex items-center justify-between mb-2">
                                 <div class="text-center flex-1">
-                                    <div class="w-12 h-12 bg-green-50 rounded-full mx-auto mb-2 flex items-center justify-center font-black text-piaui-green border-2 border-white shadow-sm text-sm">${(match.homeTeam || 'T1').substring(0,3).toUpperCase()}</div>
-                                    <p class="text-[10px] font-black text-gray-800 truncate uppercase tracking-tighter">${match.homeTeam || 'Time A'}</p>
+                                    <div class="w-12 h-12 bg-slate-50 rounded-2xl mx-auto mb-2 flex items-center justify-center font-black text-slate-400 border border-slate-100 shadow-sm text-sm">${(match.homeTeam || 'T1').substring(0,3).toUpperCase()}</div>
+                                    <p class="text-[10px] font-black text-slate-800 uppercase truncate">${match.homeTeam}</p>
                                 </div>
-                                <div class="px-3 text-center">
-                                    <div class="font-black text-2xl md:text-3xl text-piaui-green flex items-center justify-center space-x-2 italic">
-                                        ${isFinished ? `<span>${match.homeScore}</span><span class='text-gray-200'>-</span><span>${match.awayScore}</span>` : '<span class="text-gray-100">VS</span>'}
+                                <div class="px-4 text-center">
+                                    <div class="font-black text-2xl text-piaui-green tracking-tighter italic">
+                                        ${isFin ? `${match.homeScore} - ${match.awayScore}` : '<span class="text-slate-100 not-italic">VS</span>'}
                                     </div>
                                 </div>
                                 <div class="text-center flex-1">
-                                    <div class="w-12 h-12 bg-blue-50 rounded-full mx-auto mb-2 flex items-center justify-center font-black text-piaui-blue border-2 border-white shadow-sm text-sm">${(match.awayTeam || 'T2').substring(0,3).toUpperCase()}</div>
-                                    <p class="text-[10px] font-black text-gray-800 truncate uppercase tracking-tighter">${match.awayTeam || 'Time B'}</p>
+                                    <div class="w-12 h-12 bg-slate-50 rounded-2xl mx-auto mb-2 flex items-center justify-center font-black text-slate-400 border border-slate-100 shadow-sm text-sm">${(match.awayTeam || 'T2').substring(0,3).toUpperCase()}</div>
+                                    <p class="text-[10px] font-black text-slate-800 uppercase truncate">${match.awayTeam}</p>
                                 </div>
                             </div>
                             
-                            <div class="mt-8 pt-5 border-t border-dashed border-gray-100">
+                            <div class="mt-8 pt-5 border-t border-dashed border-slate-100">
                                 ${myBet ? `
-                                    <div class="bg-piaui-green bg-opacity-5 p-4 rounded-2xl flex justify-between items-center shadow-inner">
+                                    <div class="bg-piaui-green/5 p-4 rounded-2xl flex justify-between items-center group">
                                         <div>
-                                            <p class="text-[8px] text-gray-400 uppercase font-black mb-1">Seu Palpite</p>
-                                            <p class="text-xl font-black text-piaui-green">${myBet.homeBet} <span class='text-gray-200 mx-0.5'>x</span> ${myBet.awayBet}</p>
+                                            <p class="text-[8px] text-slate-400 uppercase font-black mb-1">Seu Palpite</p>
+                                            <p class="text-xl font-black text-piaui-green tracking-tighter">${myBet.homeBet} x ${myBet.awayBet}</p>
                                         </div>
                                         <div class="text-right">
-                                            <p class="text-[8px] text-gray-400 uppercase font-black mb-1">Pontos</p>
-                                            <p class="text-2xl font-black ${Number(myBet.points) > 0 ? 'text-blue-600' : 'text-gray-200'}">${isFinished ? (myBet.points || 0) : '--'}</p>
+                                            <p class="text-[8px] text-slate-400 uppercase font-black mb-1">Pontos</p>
+                                            <p class="text-2xl font-black ${Number(myBet.points) >= 15 ? 'text-orange-500' : (Number(myBet.points) > 0 ? 'text-blue-600' : 'text-slate-200')}">
+                                                ${isFin ? (myBet.points || 0) : '<i class="fas fa-clock text-sm"></i>'}
+                                            </p>
                                         </div>
                                     </div>
                                 ` : `
-                                    <button onclick="openBetModal('${match.id}')" ${isFinished ? 'disabled' : ''} class="w-full py-4 bg-piaui-yellow text-piaui-green font-black rounded-2xl text-[10px] uppercase tracking-widest transition shadow-sm ${isFinished ? 'opacity-30 cursor-not-allowed shadow-none' : 'hover:scale-[1.01] active:scale-95'}">
-                                        Lançar Palpite
-                                    </button>
+                                    <div class="text-center">
+                                        <button onclick="openBetModal('${match.id}')" ${isFin || isPastDeadline ? 'disabled' : ''} class="w-full py-4 bg-piaui-yellow text-piaui-green font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-lg shadow-yellow-500/10 ${isFin || isPastDeadline ? 'opacity-30 cursor-not-allowed' : 'hover:scale-[1.02] active:scale-95 transition-all'}">
+                                            ${isFin ? 'Inscrições Fechadas' : (isPastDeadline ? 'Fora do Prazo' : 'Lançar Palpite')}
+                                        </button>
+                                        ${!isFin && !isPastDeadline ? `<p class="text-[8px] text-slate-400 font-bold uppercase mt-3 tracking-widest">${timeLabel}</p>` : ''}
+                                    </div>
                                 `}
-                                <button onclick="toggleDetails('${match.id}')" class="w-full mt-4 text-[9px] text-gray-300 font-black hover:text-piaui-green uppercase tracking-widest transition-colors flex items-center justify-center">
-                                    <i class="fas fa-eye mr-2"></i>Palpites (${matchBets.length})
-                                </button>
-                                <div id="details-${match.id}" class="hidden mt-4 space-y-1.5 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-                                    ${matchBets.map(b => `
-                                        <div class="flex justify-between items-center text-[9px] p-2 bg-gray-50 rounded-xl border border-gray-100">
-                                            <span class="truncate font-black text-gray-600 uppercase tracking-tighter">${b.userName}</span>
-                                            <div class="flex items-center space-x-3">
-                                                <span class="font-black text-piaui-green">${b.homeBet}x${b.awayBet}</span>
-                                                ${isFinished ? `<span class="bg-white px-1.5 py-0.5 rounded border border-gray-200 font-black ${Number(b.points) > 0 ? 'text-blue-600' : 'text-gray-300'}">${b.points} Pt</span>` : ''}
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
+
+            document.getElementById('open-matches-count').innerText = openCount;
         }
 
-        window.toggleDetails = (id) => document.getElementById(`details-${id}`).classList.toggle('hidden');
-
         function calculateRanking() {
-            const userTotals = {};
-            const activeMatchIds = new Set(matches.map(m => m.id));
-
-            userGuesses.forEach(guess => {
-                if (!activeMatchIds.has(guess.matchId)) return;
-                const name = (guess.userName || 'ANÔNIMO').trim().toUpperCase();
-                if (!userTotals[name]) userTotals[name] = { name: name, points: 0, count: 0 };
-                userTotals[name].points += Number(guess.points || 0);
-                userTotals[name].count += 1;
+            const searchQuery = document.getElementById('ranking-search')?.value.toUpperCase() || "";
+            const totals = {};
+            userGuesses.forEach(g => {
+                const name = (g.userName || 'Anônimo').trim().toUpperCase();
+                if (!totals[name]) totals[name] = { name, points: 0, cravadas: 0, count: 0 };
+                totals[name].points += Number(g.points || 0);
+                totals[name].count++;
+                if (Number(g.points) === 15) totals[name].cravadas++;
             });
 
-            const sorted = Object.values(userTotals).sort((a, b) => b.points - a.points || b.count - a.count);
-            const rt = document.getElementById('ranking-table-body');
-            if (rt) {
+            let sorted = Object.values(totals).sort((a, b) => b.points - a.points || b.cravadas - a.cravadas);
+            
+            // Atualizar Stats do Topo se o jogador estiver logado
+            if (playerName) {
+                const myIdx = sorted.findIndex(u => u.name === playerName);
+                const me = sorted[myIdx];
+                if (me) {
+                    document.getElementById('stat-points').innerText = me.points;
+                    document.getElementById('stat-rank').innerText = myIdx + 1 + "º";
+                    document.getElementById('stat-cravadas').innerText = me.cravadas;
+                }
+            }
+
+            // Filtrar busca
+            if (searchQuery) {
+                sorted = sorted.filter(u => u.name.includes(searchQuery));
+            }
+
+            const tbody = document.getElementById('ranking-table-body');
+            if (tbody) {
                 if (sorted.length === 0) {
-                    rt.innerHTML = `<tr><td colspan='4' class='text-center py-16 text-gray-300 font-black uppercase text-[10px] tracking-widest italic opacity-50'>Sem registros de pontuação.</td></tr>`;
-                } else {
-                    rt.innerHTML = sorted.map((u, i) => `
-                        <tr class="${u.name === playerName ? 'bg-green-50 border-l-4 border-l-piaui-green' : ''} border-b border-gray-50">
-                            <td class="px-5 py-4 font-black text-gray-400 text-xs italic">${i + 1}º</td>
-                            <td class="px-5 py-4">
-                                <div class="flex items-center">
-                                    <span class="font-black text-gray-800 uppercase tracking-tighter text-xs">${u.name}</span>
-                                    ${u.name === playerName ? '<span class="ml-2 text-[7px] bg-green-600 text-white px-1.5 py-0.5 rounded font-black shadow-sm">VOCÊ</span>' : ''}
+                    tbody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-slate-300 font-bold uppercase text-xs">Nenhum resultado encontrado</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = sorted.map((u, i) => {
+                    const isMe = u.name === playerName;
+                    const pos = i + 1;
+                    let rankClass = "";
+                    let medal = "";
+                    if (pos === 1) { rankClass = "rank-1"; medal = "🥇"; }
+                    else if (pos === 2) { rankClass = "rank-2"; medal = "🥈"; }
+                    else if (pos === 3) { rankClass = "rank-3"; medal = "🥉"; }
+
+                    return `
+                        <tr class="${isMe ? 'bg-blue-50/50' : ''} transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="w-8 h-8 ${rankClass || 'bg-slate-100'} rounded-lg flex items-center justify-center font-black text-[11px] ${rankClass ? 'text-slate-800' : 'text-slate-400'} shadow-sm">
+                                    ${rankClass ? medal : pos + 'º'}
                                 </div>
                             </td>
-                            <td class="px-5 py-4 text-center text-gray-500 font-black text-xs">${u.count}</td>
-                            <td class="px-5 py-4 text-right font-black text-piaui-green text-xl">${u.points}</td>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col">
+                                    <span class="font-black text-slate-700 uppercase tracking-tighter text-xs">${u.name}</span>
+                                    ${isMe ? '<span class="text-[7px] font-black text-blue-500 uppercase tracking-widest mt-0.5">Você</span>' : ''}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-center font-bold text-slate-400 text-xs">${u.count}</td>
+                            <td class="px-6 py-4 text-center font-black text-orange-500 text-xs">${u.cravadas}</td>
+                            <td class="px-6 py-4 text-right">
+                                <span class="font-black text-piaui-green text-lg tracking-tighter">${u.points}</span>
+                                <span class="text-[8px] font-bold text-slate-300 ml-1 uppercase">Pts</span>
+                            </td>
                         </tr>
-                    `).join('');
-                }
+                    `;
+                }).join('');
             }
         }
 
-        // --- ADMIN: PARTICIPANTS ---
+        // --- ADMIN FUNCTIONS ---
         window.openParticipantsManager = () => {
             document.getElementById('modal-participants').classList.add('active');
             renderParticipantsList();
         };
 
-        function renderParticipantsList() {
+        window.renderParticipantsList = function() {
             const container = document.getElementById('participants-list');
             if (!container) return;
             const uniqueNames = [...new Set(userGuesses.map(g => (g.userName || 'ANÔNIMO').trim().toUpperCase()))].sort();
             if (uniqueNames.length === 0) {
-                container.innerHTML = `<div class="text-center text-gray-300 text-[10px] py-10 uppercase italic">Nenhum palpite registrado.</div>`;
+                container.innerHTML = `<div class="text-center text-slate-300 text-[10px] py-10 uppercase italic">Nenhum palpite registrado.</div>`;
                 return;
             }
             container.innerHTML = uniqueNames.map((name, index) => `
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200 group hover:border-piaui-blue transition-colors">
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-3 group hover:border-blue-200 transition-all">
                     <div class="flex-1 mr-4">
                         <input type="text" id="edit-name-input-${index}" value="${name}" 
-                               class="w-full bg-white border border-gray-100 rounded px-2 py-1 font-black text-xs text-gray-700 uppercase focus:ring-1 focus:ring-piaui-blue outline-none transition-all">
+                               class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 font-black text-xs text-slate-700 uppercase outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div class="flex items-center space-x-2">
-                        <button onclick="saveNewParticipantName('${name}', ${index})" class="bg-piaui-green text-white p-2 rounded-lg hover:scale-105 transition active:scale-95 shadow-sm">
-                            <i class="fas fa-save text-[10px]"></i>
-                        </button>
-                        <button onclick="deleteParticipant('${name}')" class="bg-red-500 text-white p-2 rounded-lg hover:scale-105 transition active:scale-95 shadow-sm">
-                            <i class="fas fa-trash-alt text-[10px]"></i>
-                        </button>
+                        <button onclick="saveNewParticipantName('${name}', ${index})" class="bg-green-600 text-white w-10 h-10 rounded-xl hover:bg-green-700 transition flex items-center justify-center shadow-md"><i class="fas fa-save text-xs"></i></button>
+                        <button onclick="deleteParticipant('${name}')" class="bg-white text-red-500 w-10 h-10 rounded-xl border border-red-100 hover:bg-red-50 transition flex items-center justify-center"><i class="fas fa-trash-alt text-xs"></i></button>
                     </div>
                 </div>
             `).join('');
-        }
+        };
 
         window.saveNewParticipantName = async (oldName, index) => {
             const newName = document.getElementById(`edit-name-input-${index}`).value.trim().toUpperCase();
-            if (!newName || newName === oldName) return showToast("Sem alterações");
-            if (!confirm(`Mudar de "${oldName}" para "${newName}"?`)) return;
+            if (!newName || newName === oldName) return;
+            if (!confirm(`Deseja alterar o nome de "${oldName}" para "${newName}" em todos os palpites?`)) return;
             try {
-                const betsToUpdate = userGuesses.filter(g => (g.userName || '').toUpperCase() === oldName);
                 const batch = writeBatch(db);
-                betsToUpdate.forEach(bet => {
+                userGuesses.filter(g => (g.userName || '').toUpperCase() === oldName).forEach(bet => {
                     batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', bet.id), { userName: newName });
                 });
                 await batch.commit();
-                showToast("Sucesso!");
+                showToast("Participante renomeado!");
                 if (oldName === playerName) { playerName = newName; localStorage.setItem('bolao_user_name', playerName); setPlayerUI(); }
-                renderParticipantsList();
-            } catch (err) { showToast("Erro."); }
+            } catch (err) { showToast("Erro ao processar."); }
         };
 
         window.deleteParticipant = async (name) => {
-            if (!confirm(`Remover TODOS os palpites de "${name}"?`)) return;
+            if (!confirm(`ATENÇÃO: Excluir todos os palpites de "${name}"? Esta ação não pode ser desfeita.`)) return;
             try {
-                const betsToDelete = userGuesses.filter(g => (g.userName || '').toUpperCase() === name);
                 const batch = writeBatch(db);
-                betsToDelete.forEach(bet => batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', bet.id)));
+                userGuesses.filter(g => (g.userName || '').toUpperCase() === name).forEach(bet => {
+                    batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', bet.id));
+                });
                 await batch.commit();
-                showToast("Removido.");
-                if (name === playerName) logoutPlayer();
-                renderParticipantsList();
-            } catch (err) { showToast("Erro."); }
+                showToast("Dados do participante removidos.");
+            } catch (err) { showToast("Erro ao remover."); }
         };
 
-        // --- ADMIN: LOGIC (RECALCULAR PONTOS COM A NOVA REGRA) ---
         window.recalculateAllPoints = async () => {
-            if (!confirm("Isso aplicará as novas regras (3pts vitória, 1pt empate) a TODOS os palpites existentes. Continuar?")) return;
-            
-            showToast("Recalculando...");
-            const finishedMatches = matches.filter(m => m.status === 'finished');
+            if (!confirm("Recalcular TODOS os pontos (15, 10, 5) agora?")) return;
+            showToast("Calculando...");
             const batch = writeBatch(db);
             let count = 0;
-
+            const finishedMatches = matches.filter(m => m.status === 'finished');
             userGuesses.forEach(bet => {
                 const match = finishedMatches.find(m => m.id === bet.matchId);
                 if (match) {
-                    const pts = calculatePointsLogic(Number(bet.homeBet), Number(bet.awayBet), Number(match.homeScore), Number(match.awayScore));
-                    if (Number(bet.points) !== pts) {
-                        batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', bet.id), { points: Number(pts) });
+                    const newPts = calculatePointsLogic(bet.homeBet, bet.awayBet, match.homeScore, match.awayScore);
+                    if (Number(bet.points) !== newPts) {
+                        batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', bet.id), { points: newPts });
                         count++;
                     }
                 }
             });
-
-            if (count > 0) { await batch.commit(); showToast(`${count} palpites atualizados!`); } 
-            else showToast("Tudo sincronizado.");
-        };
-
-        window.processBulkImport = async () => {
-            if (!activeMatchId) return showToast("Selecione um jogo!");
-            const input = document.getElementById('bulk-bets-input').value;
-            const lines = input.split('\n');
-            let count = 0;
-            const batch = writeBatch(db);
-            const match = matches.find(m => m.id === activeMatchId);
-            const isFin = match?.status === 'finished';
-            
-            lines.forEach(line => {
-                const res = line.match(/(\d+)\s*[xX]\s*(\d+)\s+(.+)/i);
-                if (res) {
-                    const hB = parseInt(res[1]);
-                    const aB = parseInt(res[2]);
-                    const name = res[3].trim().toUpperCase();
-                    let pts = isFin ? calculatePointsLogic(hB, aB, Number(match.homeScore), Number(match.awayScore)) : 0;
-
-                    const betRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'guesses'));
-                    batch.set(betRef, { matchId: activeMatchId, userName: name, homeBet: hB, awayBet: aB, points: pts, timestamp: Date.now() });
-                    count++;
-                }
-            });
-
-            if (count > 0) { await batch.commit(); showToast(`${count} palpites importados!`); document.getElementById('bulk-bets-input').value = ""; } 
-            else showToast("Use o formato: 2x1 Nome");
+            if (count > 0) { await batch.commit(); showToast(`${count} atualizações concluídas!`); }
+            else showToast("Ranking já está atualizado.");
         };
 
         window.saveMatchAdmin = async () => {
             const isFin = document.getElementById('admin-is-finished').checked;
-            const hS = parseInt(document.getElementById('admin-home-score').value) || 0;
-            const aS = parseInt(document.getElementById('admin-away-score').value) || 0;
+            const hS = Number(document.getElementById('admin-home-score').value);
+            const aS = Number(document.getElementById('admin-away-score').value);
             const data = {
                 round: document.getElementById('admin-match-round').value || "01",
                 date: document.getElementById('admin-match-date').value || "",
                 stadium: document.getElementById('admin-match-stadium').value || "",
-                homeTeam: document.getElementById('admin-home-team').value || "TIME A",
-                awayTeam: document.getElementById('admin-away-team').value || "TIME B",
-                homeScore: hS, awayScore: aS, status: isFin ? 'finished' : 'open'
+                homeTeam: document.getElementById('admin-home-team').value.toUpperCase(),
+                awayTeam: document.getElementById('admin-away-team').value.toUpperCase(),
+                homeScore: hS, awayScore: aS,
+                status: isFin ? 'finished' : 'open'
             };
-
             try {
                 let mId = activeMatchId;
                 if (activeMatchId) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'matches', activeMatchId), data);
                 else {
-                    const docRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'matches'), data);
-                    mId = docRef.id;
-                    activeMatchId = mId;
+                    const ref = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'matches'), data);
+                    mId = ref.id;
                 }
-                if (isFin) await processPoints(mId, hS, aS);
-                showToast("Salvo!");
-                renderAdminMatches();
-                if (isFin) closeModal('modal-match-admin');
+                if (isFin) {
+                    const batch = writeBatch(db);
+                    userGuesses.filter(g => g.matchId === mId).forEach(b => {
+                        const pts = calculatePointsLogic(b.homeBet, b.awayBet, hS, aS);
+                        batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', b.id), { points: pts });
+                    });
+                    await batch.commit();
+                }
+                showToast("Jogo salvo!"); closeModal('modal-match-admin');
+            } catch (e) { showToast("Falha ao salvar."); }
+        };
+
+        window.deleteMatchAdmin = async () => {
+            if (!activeMatchId || !confirm("CUIDADO: Isso excluirá o jogo e todos os palpites vinculados permanentemente.")) return;
+            try {
+                const batch = writeBatch(db);
+                batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'matches', activeMatchId));
+                userGuesses.filter(d => d.matchId === activeMatchId).forEach(b => batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', b.id)));
+                await batch.commit();
+                closeModal('modal-match-admin'); showToast("Jogo e palpites apagados.");
             } catch (err) { showToast("Erro."); }
         };
 
-        async function processPoints(matchId, realH, realA) {
-            const bets = userGuesses.filter(g => g.matchId === matchId);
+        window.processBulkImport = async () => {
+            if (!activeMatchId) return showToast("Grave o jogo primeiro!");
+            const lines = document.getElementById('bulk-bets-input').value.split('\n');
             const batch = writeBatch(db);
-            bets.forEach(b => {
-                const pts = calculatePointsLogic(Number(b.homeBet), Number(b.awayBet), Number(realH), Number(realA));
-                batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', b.id), { points: Number(pts) });
+            const match = matches.find(m => m.id === activeMatchId);
+            let c = 0;
+            lines.forEach(line => {
+                const matchRes = line.match(/(\d+)\s*[xX]\s*(\d+)\s+(.+)/);
+                if (matchRes) {
+                    const hB = Number(matchRes[1]), aB = Number(matchRes[2]), name = matchRes[3].trim().toUpperCase();
+                    const pts = match.status === 'finished' ? calculatePointsLogic(hB, aB, match.homeScore, match.awayScore) : 0;
+                    const ref = doc(collection(db, 'artifacts', appId, 'public', 'data', 'guesses'));
+                    batch.set(ref, { matchId: activeMatchId, userName: name, homeBet: hB, awayBet: aB, points: pts, timestamp: Date.now() });
+                    c++;
+                }
             });
-            if (bets.length > 0) await batch.commit();
-        }
+            if (c > 0) { await batch.commit(); showToast(`${c} palpites importados com sucesso!`); document.getElementById('bulk-bets-input').value = ""; }
+        };
 
-        // --- AUXILIARES UI ---
-        window.toggleMenu = () => document.getElementById('mobile-menu').classList.toggle('hidden');
+        // --- HELPERS UI ---
         window.switchView = (v) => {
-            document.querySelectorAll('.view-content').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.view-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${v}`).classList.remove('hidden');
             document.getElementById('mobile-menu').classList.add('hidden');
-            window.scrollTo(0,0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
+        window.toggleMenu = () => document.getElementById('mobile-menu').classList.toggle('hidden');
         window.closeModal = (id) => document.getElementById(id).classList.remove('active');
-        window.showToast = (m) => {
+        window.showToast = (msg) => {
             const t = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = m;
+            document.getElementById('toast-msg').innerText = msg;
             t.classList.remove('hidden');
             setTimeout(() => t.classList.add('hidden'), 3500);
         };
@@ -852,26 +941,29 @@
             document.getElementById('admin-is-finished').checked = m?.status === 'finished';
             document.getElementById('modal-match-admin').classList.add('active');
         };
+        window.renderAdminMatches = () => {
+            const l = document.getElementById('admin-matches-list');
+            if (l) l.innerHTML = matches.map(m => `
+                <div onclick="openMatchModal('${m.id}')" class="bg-white p-5 rounded-2xl border border-slate-100 mb-2 cursor-pointer flex justify-between items-center group hover:border-piaui-green transition-all">
+                    <div class="flex items-center">
+                        <span class="bg-slate-50 text-slate-400 px-3 py-1 rounded-lg font-black text-[9px] mr-4 uppercase">R${m.round}</span>
+                        <div class="font-black text-xs text-slate-700 uppercase">${m.homeTeam} ${m.homeScore} x ${m.awayScore} ${m.awayTeam}</div>
+                    </div>
+                    <i class="fas fa-edit text-slate-200 group-hover:text-piaui-green transition-colors"></i>
+                </div>`).join('');
+        };
         window.toggleAdminLogin = () => isAdmin ? switchView('admin') : document.getElementById('modal-admin-login').classList.add('active');
         window.loginAdmin = () => {
             if (document.getElementById('admin-pass').value === "piaui2024") {
                 isAdmin = true; closeModal('modal-admin-login'); switchView('admin');
-            } else showToast("Senha inválida!");
-        };
-        window.renderAdminMatches = () => {
-            const l = document.getElementById('admin-matches-list');
-            if (l) l.innerHTML = matches.map(m => `
-                <div onclick="openMatchModal('${m.id}')" class="bg-white p-4 rounded-2xl border border-gray-100 cursor-pointer flex justify-between items-center transition group">
-                    <div>
-                        <span class="text-[8px] font-black text-gray-400 bg-gray-50 px-2 py-0.5 rounded uppercase">R${m.round}</span> 
-                        <div class="font-black mt-1 text-gray-800 uppercase tracking-tighter text-xs">${m.homeTeam} ${m.homeScore} x ${m.awayScore} ${m.awayTeam}</div>
-                    </div>
-                    <i class="fas fa-edit text-gray-200 group-hover:text-piaui-green transition-colors text-sm"></i>
-                </div>
-            `).join('');
+                showToast("Acesso administrativo liberado.");
+            } else showToast("Senha de acesso inválida!");
         };
         window.openBetModal = (id) => {
-            if (!playerName) return showToast("Identifique-se primeiro!");
+            if (!playerName) {
+                window.scrollTo({ top: document.getElementById('auth-box').offsetTop - 100, behavior: 'smooth' });
+                return showToast("Faça seu login primeiro!");
+            }
             activeMatchId = id;
             const m = matches.find(x => x.id === id);
             document.getElementById('home-team-name').innerText = m.homeTeam;
@@ -879,24 +971,21 @@
             document.getElementById('modal-bet').classList.add('active');
         };
         window.saveBet = async () => {
-            const hb = parseInt(document.getElementById('bet-home').value) || 0;
-            const ab = parseInt(document.getElementById('bet-away').value) || 0;
+            const hb = Number(document.getElementById('bet-home').value);
+            const ab = Number(document.getElementById('bet-away').value);
             try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'guesses'), { matchId: activeMatchId, userName: playerName.trim().toUpperCase(), homeBet: hb, awayBet: ab, points: 0, timestamp: Date.now() });
-                closeModal('modal-bet'); showToast("Palpite salvo!");
-            } catch(e) { showToast("Erro."); }
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'guesses'), { 
+                    matchId: activeMatchId, 
+                    userName: playerName, 
+                    homeBet: hb, 
+                    awayBet: ab, 
+                    points: 0, 
+                    timestamp: Date.now() 
+                });
+                closeModal('modal-bet'); 
+                showToast("Seu palpite foi registrado!");
+            } catch(e) { showToast("Não foi possível salvar o palpite."); }
         };
-        window.deleteMatchAdmin = async () => {
-            if (!activeMatchId || !confirm("Remover jogo e todos os palpites associados?")) return;
-            const bets = userGuesses.filter(d => d.matchId === activeMatchId);
-            const batch = writeBatch(db);
-            batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'matches', activeMatchId));
-            bets.forEach(b => batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', b.id)));
-            await batch.commit();
-            closeModal('modal-match-admin');
-            showToast("Excluído com sucesso.");
-        };
-        window.exportRankingPDF = () => window.print();
 
         init();
     </script>
