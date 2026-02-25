@@ -502,7 +502,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, writeBatch, getDocs, query, where, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // MANTENDO SUAS CONFIGURAÇÕES ORIGINAIS
         const firebaseConfig = {
             apiKey: "AIzaSyAdlBq3u0C5npsi_pB-CYxPJxxlIj1ucYg",
             authDomain: "bolaopiauizao.firebaseapp.com",
@@ -546,7 +545,7 @@
                 renderMatches();
                 renderAdminMatches();
                 calculateRanking();
-            }, (err) => console.error("Matches Snapshot Error", err)));
+            }));
 
             const qGuesses = collection(db, 'artifacts', appId, 'public', 'data', 'guesses');
             unsubs.push(onSnapshot(qGuesses, (snapshot) => {
@@ -554,61 +553,50 @@
                 renderMatches();
                 calculateRanking();
                 if (document.getElementById('modal-participants').classList.contains('active')) renderParticipantsList();
-            }, (err) => console.error("Guesses Snapshot Error", err)));
+            }));
         }
 
-        // LÓGICA DE PONTUAÇÃO (Mantida conforme solicitado)
         function calculatePointsLogic(gH, gA, rH, rA) {
             const guessH = Number(gH), guessA = Number(gA);
             const realH = Number(rH), realA = Number(rA);
-            // Placar Exato: 15 pontos
             if (guessH === realH && guessA === realA) return 15;
-            
-            const guessResult = Math.sign(guessH - guessA); // 1 = Casa, 0 = Empate, -1 = Fora
+            const guessResult = Math.sign(guessH - guessA);
             const realResult = Math.sign(realH - realA);
-            
             if (guessResult === realResult) {
                 const guessSaldo = guessH - guessA;
                 const realSaldo = realH - realA;
-                // Vencedor + Saldo: 10 pontos (Exclui empate pois empate já cairia no 15 ou erro)
                 if (guessResult !== 0 && guessSaldo === realSaldo) return 10;
-                // Apenas vencedor/empate: 5 pontos
                 return 5;
             }
             return 0;
         }
 
-        // --- SEEDING (GERAR AUTOMATICAMENTE OS JOGOS) ---
         window.seedSemifinalMatches = async () => {
-            if(!confirm("Deseja gerar os confrontos padrão das semifinais (Ida e Volta)?")) return;
-            
+            // Removido confirm() pois bloqueia no iframe
             const batch = writeBatch(db);
             const baseMatches = [
-                // IDA
                 { round: "SEMIFINAL - IDA", homeTeam: "PARNAHYBA", awayTeam: "RIVER-PI", stadium: "Pedro Alelaf", date: "2024-03-09 16:00", homeScore: 0, awayScore: 0, status: "open" },
                 { round: "SEMIFINAL - IDA", homeTeam: "ALTOS", awayTeam: "OEIRENSE", stadium: "Lindolfo Monteiro", date: "2024-03-10 16:00", homeScore: 0, awayScore: 0, status: "open" },
-                // VOLTA
                 { round: "SEMIFINAL - VOLTA", homeTeam: "RIVER-PI", awayTeam: "PARNAHYBA", stadium: "Albertão", date: "2024-03-16 16:00", homeScore: 0, awayScore: 0, status: "open" },
                 { round: "SEMIFINAL - VOLTA", homeTeam: "OEIRENSE", awayTeam: "ALTOS", stadium: "Gerson Campos", date: "2024-03-17 16:00", homeScore: 0, awayScore: 0, status: "open" }
             ];
-
             try {
                 baseMatches.forEach(m => {
                     const ref = doc(collection(db, 'artifacts', appId, 'public', 'data', 'matches'));
                     batch.set(ref, m);
                 });
                 await batch.commit();
-                showToast("Confrontos das semifinais gerados!");
-            } catch(e) { showToast("Erro ao gerar jogos."); }
+                showToast("Confrontos gerados!");
+            } catch(e) { showToast("Erro."); }
         };
 
         window.setPlayerName = () => {
             let val = document.getElementById('input-player-name').value.trim().toUpperCase();
-            if (!val) return showToast("Digite seu nome para entrar!");
+            if (!val) return showToast("Digite seu nome!");
             playerName = val;
             localStorage.setItem('bolao_user_name', playerName);
             setPlayerUI();
-            showToast(`Bem-vindo, ${playerName.split(' ')[0]}!`);
+            showToast(`Bem-vindo!`);
         };
 
         window.logoutPlayer = () => {
@@ -630,132 +618,97 @@
             const list = document.getElementById('matches-list');
             if (!list) return;
             if (matches.length === 0) {
-                list.innerHTML = `<div class='col-span-full text-center py-20 text-slate-300 font-black uppercase text-[11px] italic tracking-widest'>Nenhum jogo das semifinais cadastrado.</div>`;
+                list.innerHTML = `<div class='col-span-full text-center py-20 text-slate-300 font-black uppercase text-[11px] italic tracking-widest'>Nenhum jogo cadastrado.</div>`;
                 return;
             }
-            
-            // ATUALIZADO: Jogos abertos primeiro, depois por data
             const sorted = [...matches].sort((a, b) => {
-                // Prioriza status 'open' sobre 'finished'
                 if (a.status === 'open' && b.status === 'finished') return -1;
                 if (a.status === 'finished' && b.status === 'open') return 1;
-                // Se status forem iguais, ordena por data
                 return new Date(a.date) - new Date(b.date);
             });
-            
             let openCount = 0;
-
             list.innerHTML = sorted.map(match => {
                 const isFin = match.status === 'finished';
                 if (!isFin) openCount++;
-
                 const mGuesses = userGuesses.filter(g => g.matchId === match.id);
                 const myBet = mGuesses.find(g => (g.userName || '').toUpperCase() === playerName.toUpperCase());
-                
                 let isPastDeadline = false;
                 if (match.date) {
                     const matchTime = new Date(match.date).getTime();
                     const now = Date.now();
-                    const oneHour = 60 * 60 * 1000;
-                    if (now > (matchTime - oneHour)) isPastDeadline = true;
+                    if (now > (matchTime - 3600000)) isPastDeadline = true;
                 }
-
                 return `
                     <div class="card-match bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
                         <div class="bg-slate-50/50 px-6 py-3 border-b border-slate-50 flex justify-between items-center">
-                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${match.round || 'SEMIFINAL'}</span>
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${match.round}</span>
                             <div class="flex items-center space-x-2">
-                                <span class="text-[8px] bg-blue-50 text-blue-500 px-3 py-1 rounded-full font-black uppercase tracking-tighter" title="Total de palpites dados para este jogo">
-                                    <i class="fas fa-users mr-1"></i> ${mGuesses.length} Palpites
+                                <span class="text-[8px] bg-blue-50 text-blue-500 px-3 py-1 rounded-full font-black uppercase tracking-tighter">
+                                    <i class="fas fa-users mr-1"></i> ${mGuesses.length}
                                 </span>
-                                <span class="text-[8px] ${isFin ? 'bg-slate-200 text-slate-500' : 'bg-green-100 text-green-700'} px-3 py-1 rounded-full font-black uppercase tracking-tighter">${isFin ? 'Encerrado' : 'Aberto'}</span>
+                                <span class="text-[8px] ${isFin ? 'bg-slate-200 text-slate-500' : 'bg-green-100 text-green-700'} px-3 py-1 rounded-full font-black uppercase tracking-tighter">${isFin ? 'Fim' : 'Aberto'}</span>
                             </div>
                         </div>
                         <div class="p-6">
                             <div class="text-center mb-6">
-                                <p class="text-[8px] text-slate-300 font-black uppercase tracking-widest mb-1">${match.stadium || 'Local Definir'}</p>
-                                <p class="text-[10px] text-slate-600 font-black uppercase">${match.date ? new Date(match.date).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : '--/-- --:--'}</p>
+                                <p class="text-[8px] text-slate-300 font-black uppercase tracking-widest mb-1">${match.stadium}</p>
+                                <p class="text-[10px] text-slate-600 font-black uppercase">${match.date ? new Date(match.date).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : '--/--'}</p>
                             </div>
                             <div class="flex items-center justify-between mb-2">
                                 <div class="text-center flex-1">
-                                    <div class="w-12 h-12 bg-slate-50 rounded-2xl mx-auto mb-2 flex items-center justify-center font-black text-piaui-green border border-slate-100 shadow-sm text-sm">${(match.homeTeam || 'T1').substring(0,3).toUpperCase()}</div>
+                                    <div class="w-12 h-12 bg-slate-50 rounded-2xl mx-auto mb-2 flex items-center justify-center font-black text-piaui-green border border-slate-100 shadow-sm text-sm">${(match.homeTeam || '').substring(0,3)}</div>
                                     <p class="text-[10px] font-black text-slate-800 uppercase truncate">${match.homeTeam}</p>
                                 </div>
-                                <div class="px-4 text-center">
-                                    <div class="font-black text-2xl text-piaui-green tracking-tighter italic">
-                                        ${isFin ? `${match.homeScore} - ${match.awayScore}` : '<span class="text-slate-100 not-italic">VS</span>'}
-                                    </div>
+                                <div class="px-4 text-center font-black text-2xl text-piaui-green">
+                                    ${isFin ? `${match.homeScore} - ${match.awayScore}` : 'VS'}
                                 </div>
                                 <div class="text-center flex-1">
-                                    <div class="w-12 h-12 bg-slate-50 rounded-2xl mx-auto mb-2 flex items-center justify-center font-black text-piaui-green border border-slate-100 shadow-sm text-sm">${(match.awayTeam || 'T2').substring(0,3).toUpperCase()}</div>
+                                    <div class="w-12 h-12 bg-slate-50 rounded-2xl mx-auto mb-2 flex items-center justify-center font-black text-piaui-green border border-slate-100 shadow-sm text-sm">${(match.awayTeam || '').substring(0,3)}</div>
                                     <p class="text-[10px] font-black text-slate-800 uppercase truncate">${match.awayTeam}</p>
                                 </div>
                             </div>
-                            
                             <div class="mt-8 pt-5 border-t border-dashed border-slate-100">
                                 ${myBet ? `
                                     <div class="bg-piaui-green/5 p-4 rounded-2xl flex justify-between items-center">
-                                        <div>
-                                            <p class="text-[8px] text-slate-400 uppercase font-black mb-1">Seu Palpite</p>
-                                            <p class="text-xl font-black text-piaui-green tracking-tighter">${myBet.homeBet} x ${myBet.awayBet}</p>
-                                        </div>
-                                        <div class="text-right">
-                                            <p class="text-[8px] text-slate-400 uppercase font-black mb-1">Pontos</p>
-                                            <p class="text-2xl font-black ${Number(myBet.points) >= 15 ? 'text-orange-500' : (Number(myBet.points) > 0 ? 'text-blue-600' : 'text-slate-200')}">
-                                                ${isFin ? (myBet.points || 0) : '<i class="fas fa-clock text-sm"></i>'}
-                                            </p>
-                                        </div>
+                                        <div><p class="text-[8px] text-slate-400 font-black mb-1">Palpite</p><p class="text-xl font-black text-piaui-green">${myBet.homeBet}x${myBet.awayBet}</p></div>
+                                        <div class="text-right"><p class="text-[8px] text-slate-400 font-black mb-1">Pontos</p><p class="text-2xl font-black ${Number(myBet.points) >= 15 ? 'text-orange-500' : 'text-blue-600'}">${isFin ? myBet.points : '--'}</p></div>
                                     </div>
                                 ` : `
-                                    <button onclick="openBetModal('${match.id}')" ${isFin || isPastDeadline ? 'disabled' : ''} class="w-full py-4 bg-piaui-yellow text-piaui-green font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-lg shadow-yellow-500/10 ${isFin || isPastDeadline ? 'opacity-30 cursor-not-allowed' : 'hover:scale-[1.02] active:scale-95 transition-all'}">
-                                        ${isFin ? 'Inscrições Fechadas' : (isPastDeadline ? 'Fora do Prazo' : 'Lançar Palpite')}
-                                    </button>
+                                    <button onclick="openBetModal('${match.id}')" ${isFin || isPastDeadline ? 'disabled' : ''} class="w-full py-4 bg-piaui-yellow text-piaui-green font-black rounded-2xl text-[10px] uppercase shadow-lg ${isFin || isPastDeadline ? 'opacity-30' : ''}">Palpitar</button>
                                 `}
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
-
             document.getElementById('open-matches-count').innerText = openCount;
         }
 
         window.calculateRanking = () => {
-            const searchQuery = document.getElementById('ranking-search')?.value.toUpperCase() || "";
             const totals = {};
             userGuesses.forEach(g => {
-                const name = (g.userName || 'Anônimo').trim().toUpperCase();
+                const name = (g.userName || 'Anon').trim().toUpperCase();
                 if (!totals[name]) totals[name] = { name, points: 0, cravadas: 0, count: 0 };
                 totals[name].points += Number(g.points || 0);
                 totals[name].count++;
                 if (Number(g.points) === 15) totals[name].cravadas++;
             });
-
-            let sorted = Object.values(totals).sort((a, b) => b.points - a.points || b.cravadas - a.cravadas);
-            
+            const sorted = Object.values(totals).sort((a, b) => b.points - a.points || b.cravadas - a.cravadas);
             if (playerName) {
                 const myIdx = sorted.findIndex(u => u.name === playerName.toUpperCase());
-                const me = sorted[myIdx];
-                if (me) {
-                    document.getElementById('stat-points').innerText = me.points;
+                if (myIdx !== -1) {
+                    document.getElementById('stat-points').innerText = sorted[myIdx].points;
                     document.getElementById('stat-rank').innerText = myIdx + 1 + "º";
-                    document.getElementById('stat-cravadas').innerText = me.cravadas;
+                    document.getElementById('stat-cravadas').innerText = sorted[myIdx].cravadas;
                 }
             }
-
-            if (searchQuery) sorted = sorted.filter(u => u.name.includes(searchQuery));
-
             const tbody = document.getElementById('ranking-table-body');
             if (tbody) {
                 tbody.innerHTML = sorted.map((u, i) => `
                     <tr class="${u.name === playerName.toUpperCase() ? 'bg-blue-50/50' : ''}">
-                        <td class="px-6 py-4">
-                            <div class="w-8 h-8 ${i === 0 ? 'rank-1' : (i === 1 ? 'rank-2' : (i === 2 ? 'rank-3' : 'bg-slate-100'))} rounded-lg flex items-center justify-center font-black text-[11px] shadow-sm">
-                                ${i + 1}º
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 font-black text-slate-700 uppercase text-xs">${u.name}</td>
-                        <td class="px-6 py-4 text-center text-slate-400 font-bold text-xs">${u.count}</td>
+                        <td class="px-6 py-4"><div class="w-8 h-8 ${i < 3 ? 'rank-'+(i+1) : 'bg-slate-100'} rounded-lg flex items-center justify-center font-black text-[11px]">${i + 1}º</div></td>
+                        <td class="px-6 py-4 font-black text-slate-700 text-xs">${u.name}</td>
+                        <td class="px-6 py-4 text-center text-slate-400 text-xs">${u.count}</td>
                         <td class="px-6 py-4 text-center text-orange-500 font-black text-xs">${u.cravadas}</td>
                         <td class="px-6 py-4 text-right font-black text-piaui-green text-lg">${u.points}</td>
                     </tr>
@@ -763,7 +716,6 @@
             }
         };
 
-        // ADMIN HELPERS
         window.saveMatchAdmin = async () => {
             const isFin = document.getElementById('admin-is-finished').checked;
             const hS = Number(document.getElementById('admin-home-score').value);
@@ -778,33 +730,46 @@
                 status: isFin ? 'finished' : 'open'
             };
             try {
-                let mId = activeMatchId;
-                if (activeMatchId) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'matches', activeMatchId), data);
-                else {
+                if (activeMatchId) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'matches', activeMatchId), data);
+                } else {
                     const ref = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'matches'), data);
-                    mId = ref.id;
+                    activeMatchId = ref.id;
                 }
-                if (isFin) {
+                if (isFin && activeMatchId) {
                     const batch = writeBatch(db);
-                    userGuesses.filter(g => g.matchId === mId).forEach(b => {
+                    userGuesses.filter(g => g.matchId === activeMatchId).forEach(b => {
                         const pts = calculatePointsLogic(b.homeBet, b.awayBet, hS, aS);
                         batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', b.id), { points: pts });
                     });
                     await batch.commit();
                 }
-                showToast("Jogo salvo!"); closeModal('modal-match-admin');
+                showToast("Sucesso!"); closeModal('modal-match-admin');
             } catch (e) { showToast("Erro."); }
+        };
+
+        window.deleteMatchAdmin = async () => {
+            if (!activeMatchId) return;
+            // Confirm removido para funcionar no Canvas
+            try {
+                const batch = writeBatch(db);
+                batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'matches', activeMatchId));
+                userGuesses.filter(d => d.matchId === activeMatchId).forEach(b => {
+                    batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'guesses', b.id));
+                });
+                await batch.commit();
+                closeModal('modal-match-admin'); showToast("Apagado!");
+            } catch (err) { showToast("Erro."); }
         };
 
         window.loginAdmin = () => {
             if (document.getElementById('admin-pass').value === "piaui2024") {
                 isAdmin = true; closeModal('modal-admin-login'); switchView('admin');
-                showToast("Acesso administrativo liberado.");
-            } else showToast("Senha inválida!");
+            } else showToast("Senha incorreta!");
         };
 
         window.openBetModal = (id) => {
-            if (!playerName) return showToast("Digite seu nome no topo primeiro!");
+            if (!playerName) return showToast("Identifique-se primeiro!");
             activeMatchId = id;
             const m = matches.find(x => x.id === id);
             document.getElementById('home-team-name').innerText = m.homeTeam;
@@ -819,25 +784,10 @@
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'guesses'), { 
                     matchId: activeMatchId, userName: playerName.toUpperCase(), homeBet: hb, awayBet: ab, points: 0, timestamp: Date.now() 
                 });
-                closeModal('modal-bet'); showToast("Palpite registrado!");
-            } catch(e) { showToast("Erro ao salvar."); }
+                closeModal('modal-bet'); showToast("Palpite salvo!");
+            } catch(e) { showToast("Erro."); }
         };
 
-        window.switchView = (v) => {
-            document.querySelectorAll('.view-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`view-${v}`).classList.remove('hidden');
-            document.getElementById('mobile-menu').classList.add('hidden');
-        };
-
-        window.toggleAdminLogin = () => isAdmin ? switchView('admin') : document.getElementById('modal-admin-login').classList.add('active');
-        window.closeModal = (id) => document.getElementById(id).classList.remove('active');
-        window.showToast = (msg) => {
-            const t = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            t.classList.remove('hidden');
-            setTimeout(() => t.classList.add('hidden'), 3500);
-        };
-        
         window.openMatchModal = (id = null) => {
             activeMatchId = id;
             const m = matches.find(x => x.id === id);
@@ -857,12 +807,22 @@
             const l = document.getElementById('admin-matches-list');
             if (l) l.innerHTML = matches.map(m => `
                 <div onclick="openMatchModal('${m.id}')" class="bg-white p-5 rounded-2xl border border-slate-100 cursor-pointer flex justify-between items-center hover:border-piaui-green transition-all">
-                    <div>
-                        <span class="text-[9px] font-black text-slate-400 block">${m.round}</span>
-                        <div class="font-black text-xs text-slate-700 uppercase">${m.homeTeam} ${m.homeScore} x ${m.awayScore} ${m.awayTeam}</div>
-                    </div>
+                    <div><span class="text-[9px] font-black text-slate-400 block">${m.round}</span><div class="font-black text-xs uppercase">${m.homeTeam} ${m.homeScore}x${m.awayScore} ${m.awayTeam}</div></div>
                     <i class="fas fa-edit text-slate-200"></i>
                 </div>`).join('');
+        };
+
+        window.switchView = (v) => {
+            document.querySelectorAll('.view-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${v}`).classList.remove('hidden');
+        };
+        window.toggleAdminLogin = () => isAdmin ? switchView('admin') : document.getElementById('modal-admin-login').classList.add('active');
+        window.closeModal = (id) => document.getElementById(id).classList.remove('active');
+        window.showToast = (msg) => {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 3500);
         };
 
         init();
