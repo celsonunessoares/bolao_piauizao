@@ -349,7 +349,7 @@
 
     <!-- Modal: Palpite -->
     <div id="modal-bet" class="modal no-print">
-        <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full mx-4 shadow-2xl relative overflow-hidden">
+        <div class="bg-white rounded-[2.5rem] p-8 max-sm w-full mx-4 shadow-2xl relative overflow-hidden">
             <h3 class="text-lg font-black mb-6 text-center text-slate-800 uppercase tracking-tighter"
                 id="modal-bet-title">Enviar Palpite</h3>
             <div
@@ -634,7 +634,15 @@
                 return;
             }
             
-            const sorted = [...matches].sort((a, b) => new Date(a.date) - new Date(b.date));
+            // ATUALIZADO: Jogos abertos primeiro, depois por data
+            const sorted = [...matches].sort((a, b) => {
+                // Prioriza status 'open' sobre 'finished'
+                if (a.status === 'open' && b.status === 'finished') return -1;
+                if (a.status === 'finished' && b.status === 'open') return 1;
+                // Se status forem iguais, ordena por data
+                return new Date(a.date) - new Date(b.date);
+            });
+            
             let openCount = 0;
 
             list.innerHTML = sorted.map(match => {
