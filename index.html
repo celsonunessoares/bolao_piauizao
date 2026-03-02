@@ -598,13 +598,24 @@
             list.innerHTML = sorted.map(match => {
                 const isFin = match.status === 'finished';
                 if (!isFin) openCount++;
-                const myBet = userGuesses.find(g => g.matchId === match.id && g.userName.toUpperCase() === playerName.toUpperCase());
+                
+                // Filtra quantos palpites existem para este jogo
+                const matchGuesses = userGuesses.filter(g => g.matchId === match.id);
+                const guessCount = matchGuesses.length;
+                const myBet = matchGuesses.find(g => g.userName.toUpperCase() === playerName.toUpperCase());
                 
                 return `
                     <div class="card-match bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
                         <div class="bg-slate-50/50 px-6 py-3 border-b flex justify-between items-center">
                             <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${match.round}</span>
-                            <span class="text-[8px] ${isFin ? 'bg-slate-200 text-slate-500' : 'bg-green-100 text-green-700'} px-3 py-1 rounded-full font-black uppercase">${isFin ? 'Fim' : 'Aberto'}</span>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-[8px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-black uppercase flex items-center">
+                                    <i class="fas fa-users mr-1"></i> ${guessCount}
+                                </span>
+                                <span class="text-[8px] ${isFin ? 'bg-slate-200 text-slate-500' : 'bg-green-100 text-green-700'} px-3 py-1 rounded-full font-black uppercase">
+                                    ${isFin ? 'Fim' : 'Aberto'}
+                                </span>
+                            </div>
                         </div>
                         <div class="p-6">
                             <div class="text-center mb-4">
